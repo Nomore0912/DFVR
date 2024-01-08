@@ -62,16 +62,4 @@ df.tool = {
             return new THREE.Color("#ccc");
         }
     },
-
-    savePDB: function (text, filename) {
-        let blob = new Blob([text], {
-            type: 'text/plain;charset=UTF-8'
-        });
-        let link = document.createElement('');
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.href = URL.createObjectURL(blob);
-        link.download = filename || 'ydf.pdb'
-        link.click();
-    }
 }
