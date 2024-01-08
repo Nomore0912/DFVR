@@ -8,4 +8,9 @@ df = {
     GROUP: {},
     GeoCenterOffset: "",
 
+    // residue
+    residue: '',
+
+    exportPDB: false,
+
 }
