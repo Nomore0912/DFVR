@@ -8,6 +8,32 @@ var w3m_isset = function (o) {
     return typeof (o) != 'undefined'
 }
 
+// 切分不连续的字符串
+var w3m_split_by_undefined = function (dict, start, stop) {
+    let part = [];
+    let keys = Object.keys(dict).sort(customCompare);
+    let currentRange = [start, start];
+
+    for (let i = 1; i < keys.length; i++) {
+        const key = keys[i];
+        let st = customCompare(key, start);
+        let ed = customCompare(key, stop);
+        if (st >= 0) {
+            if (ed <= 0) {
+                let count = customCompare(keys[i], keys[i - 1]);
+                if (count === 1) {
+                    currentRange[1] = keys[i];
+                } else {
+                    part.push(currentRange);
+                    currentRange = [key, key];
+                }
+            }
+        }
+    }
+    part.push(currentRange);
+    return part;
+}
+
 var w3m_split_by_difference = function (dict) {
     // 获取并排序字典的键
     let keys = Object.keys(dict).sort(customCompare);
@@ -19,7 +45,7 @@ var w3m_split_by_difference = function (dict) {
         if (dict[key] === currentRange[2]) {
             currentRange[1] = key;
         } else {
-            result.push(currentRange);
+            result.push([currentRange]);
             currentRange = [key, key, dict[key]];
         }
     }
@@ -59,7 +85,9 @@ var customCompare = function (a, b) {
     }
     const strA = a.replace(/\d+/g, '');
     const strB = b.replace(/\d+/g, '');
-    return strA.localeCompare(strB);
+    const charCode1 = strA.charCodeAt(0);
+    const charCode2 = strB.charCodeAt(0);
+    return charCode1 - charCode2;
 };
 
 var w3m_find_object_first = function (obj) {
@@ -75,5 +103,3 @@ var w3m_find_object_last = function (obj, return_item) {
 var w3m_copy = function (o) {
     return Array.isArray(o) ? o.slice(0) : o;
 }
-
-

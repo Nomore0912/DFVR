@@ -708,13 +708,16 @@ w3m.tool = {
             }
         }
     },
+
     fillMainAsLine: function (mol_id, chain_id, start, stop) {
         let mol = w3m.mol[mol_id];
         let chain = mol.tree.main[chain_id];
         let chain_type = mol.chain[chain_id];
         let chain_first = w3m_find_first(chain);
         let bridge = chain_type === w3m.CHAIN_AA ? w3m.structure.bridge.amino_acid : w3m.structure.bridge.nucleic_acid;
-        for (let i in mol.residue[chain_id]) {
+        let residueKeys = Object.keys(mol.residue[chain_id]).sort(customCompare);
+        for (let io in residueKeys) {
+            let i = residueKeys[io];
             let st = customCompare(i, start);
             let ed = customCompare(i, stop);
             if (st >= 0) {
@@ -761,18 +764,26 @@ w3m.tool = {
         let chain_type = mol.chain[chain_id];
         let structure = chain_type === w3m.CHAIN_AA ? w3m.structure.backbone.amino_acid :
             w3m.structure.backbone.nucleic_acid;
+        let part = w3m_split_by_undefined(chain, start, stop);
+        for (var i in part) {
+            let path = [];
+            let part_start = part[i][0];
+            let part_stop = part[i][1];
 
-        for (let i in mol.residue[chain_id]) {
-            let st = customCompare(i, start);
-            let ed = customCompare(i, stop);
-            if (st >= 0) {
-                if (ed <= 0) {
-                    let residue = chain[i];
-                    for (let ii = 0, ll = structure.length; ii < ll; ii++) {
-                        let atom_id = residue[structure[ii]];
-                        let atom = w3m.tool.getMainAtomById(mol_id, atom_id);
-                        if (atom) {
-                            w3m.mol[mol_id].residueData[atom.chainname][atom.resid].bbond.push(atom_id);
+            let residueKeys = Object.keys(mol.residue[chain_id]).sort(customCompare);
+            for (let io in residueKeys) {
+                let i = residueKeys[io];
+                let st = customCompare(i, part_start);
+                let ed = customCompare(i, part_stop);
+                if (st >= 0) {
+                    if (ed <= 0) {
+                        let residue = chain[i];
+                        for (let ii = 0, ll = structure.length; ii < ll; ii++) {
+                            let atom_id = residue[structure[ii]];
+                            let atom = w3m.tool.getMainAtomById(mol_id, atom_id);
+                            if (atom) {
+                                w3m.mol[mol_id].residueData[atom.chainname][atom.resid].bbond.push(atom_id);
+                            }
                         }
                     }
                 }
@@ -780,6 +791,7 @@ w3m.tool = {
         }
     },
 
+    // sheet & arrow
     fillMainAsCartoon: function (mol_id, chain_id, start, stop) {
         let mol = w3m.mol[mol_id];
         if (mol.chain[chain_id] !== w3m.CHAIN_AA) {
@@ -789,47 +801,413 @@ w3m.tool = {
         let structure = w3m.structure.residue.amino_acid;
         let normal_token = w3m.structure.normal.amino_acid;
 
-        let path = [];
-        let last_normal = [];
+        let part = w3m_split_by_undefined(chain, start, stop);
+        for (let d = 0, l = part.length; d < l; d++) {
+            let path = [];
+            let part_start = part[d][0];
+            let part_stop = part[d][1];
+            let last_normal = [];
 
-        // 记录 normal
-        for (let i in mol.residue[chain_id]) {
-            let st = customCompare(i, start);
-            let ed = customCompare(i, stop);
-            let normal = [0, 0, 0];
-            let turnover = [0, 0, 0];
-            if (st >= 0) {
-                if (ed <= 0) {
-                    let residue = chain[i];
-                    if (!w3m_isset(residue[structure])) {
-                        continue;
-                    }
-                    let atom_info = mol.getMain(residue[structure]);
-                    if (w3m_isset(residue[normal_token[0]]) && w3m_isset(residue[normal_token[1]])) {
-                        normal = vec3.point(mol.atom.main[residue[normal_token[0]]][6],
-                            mol.atom.main[residue[normal_token[1]]][6]);
-                        // normal fix! Necessary! Important! for beta-sheel
-                        turnover = vec3.dot(last_normal, normal) < 0;
-                        // 调整normal朝向
-                        turnover ? normal = vec3.negate(normal) : void (0);
-                    }
+            // 记录 normal
+            let residueKeys = Object.keys(mol.residue[chain_id]).sort(customCompare);
+            for (let io in residueKeys) {
+                let i = residueKeys[io];
+                let st = customCompare(i, part_start);
+                let ed = customCompare(i, part_stop);
+                let normal = [0, 0, 0];
+                let turnover = [0, 0, 0];
+                if (st >= 0) {
+                    if (ed <= 0) {
+                        let residue = chain[i];
+                        if (!w3m_isset(residue[structure])) {
+                            continue;
+                        }
+                        let atom_info = mol.getMain(residue[structure]);
+                        if (w3m_isset(residue[normal_token[0]]) && w3m_isset(residue[normal_token[1]])) {
+                            normal = vec3.point(mol.atom.main[residue[normal_token[0]]][6],
+                                mol.atom.main[residue[normal_token[1]]][6]);
+                            // normal fix! Necessary! Important! for beta-sheel
+                            turnover = st > 0 && vec3.dot(last_normal, normal) < 0;
+                            // 调整normal朝向
+                            turnover ? normal = vec3.negate(normal) : void (0);
+                        } else {
+                            normal = [0, 0, 0];
+                            turnover = [0, 0, 0];
+                        }
 
-                    atom_info[4] = normal;
-                    atom_info[6] = turnover;
-                    path.push(atom_info);
-                    last_normal = w3m_copy(normal);
+                        atom_info[4] = normal;
+                        atom_info[6] = turnover;
+                        path.push(atom_info);
+                        last_normal = w3m_copy(normal);
+                    }
+                }
+            }
+            let frame = [];
+            if (path.length > 2) {
+                this.naturalFrame(path, frame, mol_id);
+            }
+
+            /* Fill */
+            // SS
+            let ss_map = mol.ss[chain_id];
+            let ss_array = {};
+            for (let io in residueKeys) {
+                let i = residueKeys[io];
+                let st = customCompare(i, part_start);
+                let ed = customCompare(i, part_stop);
+                if (st >= 0) {
+                    if (ed <= 0) {
+                        // todo
+                        switch (ss_map[i][0]) {
+                            case w3m.HELIX:
+                            case w3m.HELIX_HEAD:
+                            case w3m.HELIX_BODY:
+                            case w3m.HELIX_FOOT:
+                                ss_array[i] = w3m.HELIX;
+                                break;
+                            case w3m.SHEET:
+                            case w3m.SHEET_HEAD:
+                            case w3m.SHEET_BODY:
+                            case w3m.SHEET_FOOT:
+                                ss_array[i] = w3m.SHEET;
+                                break;
+                            case w3m.LOOP:
+                            case w3m.LOOP_HEAD:
+                            case w3m.LOOP_BODY:
+                            case w3m.LOOP_FOOT:
+                                ss_array[i] = w3m.LOOP;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            let ss_split = w3m_split_by_difference(ss_array);
+            let ss = {
+                loop: [],
+                helix: [],
+                sheet: []
+            };
+
+            for (let ii in ss_split) {
+                let ss_split_array = ss_split[ii];
+                let ss_start = ss_split_array[0];
+                let ss_stop = ss_split_array[1];
+                let ss_type = ss_split_array[2];
+
+                if ([w3m.HELIX, w3m.SHEET].indexOf(ss_type) >= 0 && w3m_isset(ss_split[ii - 1])) {
+                    if ([w3m.HELIX, w3m.SHEET].indexOf(ss_split[ii - 1][2]) >= 0) {
+                        ss.loop.push([ss_split[ii - 1][1], ss_start]);
+                    }
+                }
+                switch (ss_type) {
+                    case w3m.HELIX:
+                        ss.helix.push([ss_start, ss_stop]);
+                        break;
+                    case w3m.SHEET:
+                        ss.sheet.push([ss_start, ss_stop]);
+                        break;
+                    case w3m.LOOP:
+                        ss.loop.push([ss_start, ss_stop]);
+                        break;
+                }
+            }
+
+            let keysIndex = Object.keys(mol.residue[chain_id]).sort(customCompare);
+
+            let seg = w3m.config.smooth_segment % 2 ? w3m.config.smooth_segment + 1 : w3m.config.smooth_segment;
+            for (let ii in ss.helix) {
+                let ss_start = ss.helix[ii][0];
+                let ss_stop = ss.helix[ii][1];
+
+                let ss_start_index = findResidueIdIndex(keysIndex, ss_start);
+                let ss_stop_index = findResidueIdIndex(keysIndex, ss_stop);
+                let start_index = findResidueIdIndex(keysIndex, part_start);
+                let stop_index = findResidueIdIndex(keysIndex, part_start);
+
+                let geom_start = (ss_start_index - start_index) * (seg + 1);
+                let geom_stop = (ss_stop_index - stop_index) * (seg + 1);
+                let geom_frame = frame.slice(geom_start, geom_stop + 1);
+                if (w3m.config.geom_helix_mode === w3m.HIDE) {
+                } else {
+                    let inner_face_turnover_count = 0;
+                    geom_frame.forEach(function (item) {
+                        item[6] ? inner_face_turnover_count++ : void (0)
+                    });
+                    let inner_face = inner_face_turnover_count / geom_frame.length > 0.5 ?
+                        w3m.INNERFACE_TURNOVER : w3m.INNERFACE_NON_TURNOVER;
+                    let inner_differ = !!w3m.config.geom_helix_inner_differ;
+                    let side_differ = !!w3m.config.geom_helix_side_differ;
+                    let side_color = side_differ ? w3m.config.geom_helix_side_color : null;
+                    let msg = {
+                        inner_differ: inner_differ,
+                        inner_face: inner_face,
+                        side_differ: side_differ,
+                        side_color: side_color
+                    };
+                    switch (w3m.config.geom_helix_mode) {
+                        case w3m.CUBE:
+                            this.cubeFiller(geom_frame, msg);
+                            break;
+                    }
+                }
+            }
+            for (let ii in ss.sheet) {
+                let ss_start = ss.sheet[ii][0];
+                let ss_stop = ss.sheet[ii][1];
+                let ss_start_index = findResidueIdIndex(keysIndex, ss_start);
+                let ss_stop_index = findResidueIdIndex(keysIndex, ss_stop);
+                let start_index = findResidueIdIndex(keysIndex, part_start);
+                let stop_index = findResidueIdIndex(keysIndex, part_start);
+
+                let geom_start = (ss_start_index - start_index) * (seg + 1);
+                let geom_stop = (ss_stop_index - stop_index) * (seg + 1);
+                let geom_frame = frame.slice(geom_start, geom_stop + 1);
+
+                w3m.config.geom_sheet_flat ? geom_frame = this.zigzagFix(geom_frame) : void (0);
+                if (w3m.config.geom_sheet_mode === w3m.HIDE) {
+                } else {
+                    let side_differ = !!w3m.config.geom_sheet_side_differ;
+                    let side_color = side_differ ? w3m.config.geom_sheet_side_color : null;
+                    let msg = {
+                        side_differ: side_differ,
+                        side_color: side_color
+                    };
+                    switch (w3m.config.geom_sheet_mode) {
+                        /* ARROW */
+                        case w3m.ARROW:
+                            this.arrowFiller(geom_frame, msg, mol_id);
+                            break;
+                    }
                 }
             }
         }
-        let frame = [];
-        if (path.length > 2) {
-            this.naturalFrame(path, frame);
-        } else if (path.length === 2) {
-            this.simpleFrame(path, frame);
+    },
+    cubeFiller: function (frame, msg) {
+        msg = msg || {};
+        let side_differ = w3m_isset(msg.side_differ) ? msg.side_differ : w3m.config.geom_cube_side_differ;
+        let side_color = msg.side_color || w3m.config.geom_cube_side_color;
+        let inner_differ = w3m_isset(msg.inner_differ) ? msg.inner_differ : false;
+        let inner_face = w3m_isset(msg.inner_face) ? msg.inner_face : false;
+        let shell = [];
+        let shell_1 = this.cubeShell(frame, shell, {
+            side_differ: side_differ,
+            side_color: side_color,
+            inner_differ: inner_differ,
+            inner_face: inner_face
+        });
+        return shell_1;
+    },
+    arrowFiller: function (frame, msg, mol_id) {
+        msg = msg || {};
+        let side_differ = w3m_isset(msg.side_differ) ? msg.side_differ : w3m.config.geom_arrow_side_differ;
+        let side_color = msg.side_color || w3m.config.geom_arrow_side_color;
+        let inner_differ = w3m_isset(msg.inner_differ) ? msg.inner_differ : false;
+        let inner_face = w3m_isset(msg.inner_face) ? msg.inner_face : false;
+        let len = frame.length;
+        let seg = w3m.config.smooth_segment % 2 ? w3m.config.smooth_segment + 1 : w3m.config.smooth_segment;
+
+        // body
+        let offset = df.GeoCenterOffset;
+        let shell = this.cubeFiller(frame.slice(0, len - (seg + 1)), {
+            end_mode: w3m.END_XO,
+            side_differ: side_differ,
+            side_color: side_color,
+            inner_differ: inner_differ,
+            inner_face: inner_face
+        });
+
+        for (let i = 0; i < shell.length; i++) {
+            for (let j = 0; j < 4; j++) {
+                let k = j * 2 + 1;
+                let pos = new THREE.Vector3(shell[i][k][1][0] + offset.x, shell[i][k][1][1] + offset.y, shell[i][k][1][2] + offset.z);
+                let atom = w3m.tool.getMainAtomById(mol_id, shell[i][k][0]);
+                if (atom && atom.resid) {
+                    w3m.mol[mol_id].residueData[atom.chainname][atom.resid].arrow.push(pos);
+                }
+            }
+        }
+        // arrow head
+        shell = this.arrowheadFiller(frame.slice(len - (seg + 2)), {
+            side_differ: side_differ,
+            side_color: side_color,
+            inner_differ: inner_differ,
+            inner_face: inner_face
+        });
+        for (let si = 0; si < shell.length; si++) {
+            for (let sj = 0; sj < 4; sj++) {
+                let k = sj * 2 + 1;
+                let pos = new THREE.Vector3(shell[si][k][1][0] + offset.x, shell[si][k][1][1] + offset.y, shell[si][k][1][2] + offset.z);
+                let atom = w3m.tool.getMainAtomById(mol_id, shell[si][k][0]);
+                if (atom && atom.resid) {
+                    w3m.mol[mol_id].residueData[atom.chainname][atom.resid].arrow.push(pos);
+                }
+            }
         }
     },
-
-    naturalFrame: function (path, frame) {
+    arrowheadFiller: function (frame, msg) {
+        msg = msg || {};
+        let side_differ = w3m_isset(msg.side_differ) ? msg.side_differ : false,
+            side_color = msg.side_color || w3m.config.geom_arrow_side_color,
+            inner_differ = w3m_isset(msg.inner_differ) ? msg.inner_differ : false,
+            inner_face = w3m_isset(msg.inner_face) ? msg.inner_face : false;
+        let shell = [];
+        this.arrowheadShell(frame, shell, {
+            side_differ: side_differ,
+            side_color: side_color,
+            inner_differ: inner_differ,
+            inner_face: inner_face
+        });
+        return shell;
+    },
+    arrowheadShell: function (frame, shell, msg) {
+        msg = msg || {};
+        var width_max = w3m_isset(msg.width_max) ? msg.width_max : w3m.config.geom_arrowhead_lower,
+            width_min = w3m_isset(msg.width_min) ? msg.width_min : w3m.config.geom_arrowhead_upper,
+            height = w3m_isset(msg.height) ? msg.height : w3m.config.geom_arrow_height,
+            h$2 = height / 2,
+            side_differ = w3m_isset(msg.side_differ) ? msg.side_differ : w3m.config.geom_arrow_side_differ,
+            side_color = msg.side_color || w3m.config.geom_arrow_side_color,
+            inner_differ = w3m_isset(msg.inner_differ) ? msg.inner_differ : false,
+            inner_color = w3m.config.geom_helix_inner_color,
+            inner_face = msg.inner_face || w3m.INNERFACE_VARY;
+        // shell
+        for (var i = 0, l = frame.length; i < l; i++) {
+            var t = i * 2 > l - 1 ? (i - 1) / (l - 2) : i / (l - 2),
+                id = frame[i][0],
+                o = frame[i][1],
+                color = frame[i][2],
+                e1 = frame[i][4],
+                _e1 = vec3.negate(e1),
+                e2 = frame[i][5],
+                _e2 = vec3.negate(e2);
+            var color_side = side_differ ? side_color : color,
+                w_h = [((1 - t) * width_max + width_min) / 2, h$2],
+                e1_p_e2 = math.polysum(w_h, [e1, e2]),
+                e1_m_e2 = math.polysum(w_h, [e1, _e2]);
+            if (inner_differ) {
+                if (inner_face == w3m.INNERFACE_VARY) {
+                    var color_upper = frame[i][6] ? inner_color : color,
+                        color_lower = !frame[i][6] ? inner_color : color;
+                } else {
+                    var color_upper = inner_face == w3m.INNERFACE_TURNOVER ? inner_color : color,
+                        color_lower = inner_face == w3m.INNERFACE_NON_TURNOVER ? inner_color : color;
+                }
+            } else {
+                var color_upper = color_lower = color;
+            }
+            shell[i] = [
+                [id, vec3.plus(o, e1_p_e2), color_side, e1],
+                [id, vec3.plus(o, e1_p_e2), color_upper, e2],
+                [id, vec3.minus(o, e1_m_e2), color_upper, e2],
+                [id, vec3.minus(o, e1_m_e2), color_side, _e1],
+                [id, vec3.minus(o, e1_p_e2), color_side, _e1],
+                [id, vec3.minus(o, e1_p_e2), color_lower, _e2],
+                [id, vec3.plus(o, e1_m_e2), color_lower, _e2],
+                [id, vec3.plus(o, e1_m_e2), color_side, e1]
+            ];
+        }
+    },
+    zigzagFix: function (path) {
+        let len = path.length;
+        let n = w3m.config.smooth_segment % 2 ? w3m.config.smooth_segment + 1 : w3m.config.smooth_segment;
+        let ori = [];
+        let ori_len = (len - 1) / (n + 1) + 1;
+        for (let i = 0; i < ori_len; i++) {
+            w3m_isset(path[i * (n + 1)]) ? ori[i] = w3m_copy(path[i * (n + 1)]) : void (0);
+        }
+        // curve
+        let curve_xyz = [];
+        let curve_normal = [];
+        let sample_xyz = [];
+        let sample_normal = [];
+        let curve_len = (ori_len - 1) * n + 1;
+        if (ori_len < 5) {
+            /* Line */
+            curve_xyz = math.lineFit(curve_len - 1, ori[0][1], ori[ori_len - 1][1]);
+            curve_normal = math.lineFit(curve_len - 1, ori[0][4], ori[ori_len - 1][4]);
+        } else if (ori_len < 8) {
+            /* Quad */
+            sample_xyz = ori_len % 2 ? ori[(ori_len - 1) / 2][1] : vec3.mid(ori[ori_len / 2 - 1][1], ori[ori_len / 2][1]);
+            sample_normal = ori_len % 2 ? ori[(ori_len - 1) / 2][4] : vec3.mid(ori[ori_len / 2 - 1][4], ori[ori_len / 2][4]);
+            // curve
+            curve_xyz = math.quadFit(curve_len - 1, ori[0][1], sample_xyz, ori[ori_len - 1][1]);
+            curve_normal = math.quadFit(curve_len - 1, ori[0][4], sample_normal, ori[ori_len - 1][4]);
+        } else {
+            /* Cube */
+            sample_xyz = [ori[Math.floor(0.25 * ori_len)][1], ori[Math.floor(0.75 * ori_len)][1]];
+            sample_normal = [ori[Math.floor(0.25 * ori_len)][4], ori[Math.floor(0.75 * ori_len)][4]];
+            curve_xyz = math.cubeFit4parts(curve_len - 1, ori[0][1], sample_xyz[0], sample_xyz[1], ori[ori_len - 1][1]);
+            curve_normal = math.cubeFit4parts(curve_len - 1, ori[0][4], sample_normal[0], sample_normal[1], ori[ori_len - 1][4]);
+        }
+        // fixed point
+        let fixed = [];
+        for (let i = 0; i < curve_len; i++) {
+            let offset = fixed.length;
+            let id = path[offset][0];
+            let xyz = curve_xyz[i][0],
+                color = path[offset][2],
+                tan = vec3.unit(curve_xyz[i][1]),
+                normal = vec3.unit(curve_normal[i][0]), // fix normal, more flat
+                binormal = vec3.cross(tan, normal);
+            fixed.push([id, xyz, color, tan, normal, binormal]);
+            if ((i - n / 2) % n === 0) {
+                id = path[offset + 1][0];
+                color = path[offset + 1][2];
+                fixed.push([id, xyz, color, tan, normal, binormal]);
+            }
+        }
+        return fixed;
+    },
+    cubeShell: function (frame, shell, msg) {
+        msg = msg || {};
+        let width = msg.width || w3m.config.geom_cube_width,
+            w$2 = width / 2,
+            height = msg.height || w3m.config.geom_cube_height,
+            h$2 = height / 2,
+            side_differ = w3m_isset(msg.side_differ) ? msg.side_differ : w3m.config.geom_cube_side_differ,
+            side_color = msg.side_color || w3m.config.geom_cube_side_color,
+            inner_differ = w3m_isset(msg.inner_differ) ? msg.inner_differ : false,
+            inner_color = w3m.config.geom_helix_inner_color,
+            inner_face = w3m_isset(msg.inner_face) ? msg.inner_face : w3m.INNERFACE_VARY;
+        for (let i = 0, l = frame.length; i < l; i++) {
+            let id = frame[i][0],
+                o = frame[i][1],
+                color = frame[i][2],
+                e1 = frame[i][4],
+                _e1 = vec3.negate(e1),
+                e2 = frame[i][5],
+                _e2 = vec3.negate(e2),
+                e1_p_e2 = math.polysum([w$2, h$2], [e1, e2]),
+                e1_m_e2 = math.polysum([w$2, h$2], [e1, _e2]),
+                color_upper = 0,
+                color_lower = 0;
+            let color_side = side_differ ? side_color : color;
+            if (inner_differ) {
+                if (inner_face === w3m.INNERFACE_VARY) {
+                    color_upper = frame[i][6] ? inner_color : color;
+                    color_lower = !frame[i][6] ? inner_color : color;
+                } else {
+                    color_upper = inner_face === w3m.INNERFACE_TURNOVER ? inner_color : color;
+                    color_lower = inner_face === w3m.INNERFACE_NON_TURNOVER ? inner_color : color;
+                }
+            } else {
+                color_upper = color_lower = color;
+            }
+            shell[i] = [
+                [id, vec3.plus(o, e1_p_e2), color_side, e1],
+                [id, vec3.plus(o, e1_p_e2), color_upper, e2],
+                [id, vec3.minus(o, e1_m_e2), color_upper, e2],
+                [id, vec3.minus(o, e1_m_e2), color_side, _e1],
+                [id, vec3.minus(o, e1_p_e2), color_side, _e1],
+                [id, vec3.minus(o, e1_p_e2), color_lower, _e2],
+                [id, vec3.plus(o, e1_m_e2), color_lower, _e2],
+                [id, vec3.plus(o, e1_m_e2), color_side, e1]
+            ];
+        }
+        return shell;
+    },
+    naturalFrame: function (path, frame, mol_id) {
         // path -> all atoms
         let offset = df.GeoCenterOffset;
         // 平滑段数, 首9, 尾11, 全长20
@@ -840,22 +1218,70 @@ w3m.tool = {
         let len = path.length;
 
         // /* xyz, color & tan */
-        // 计算的第一个atom的 曲率变化
+        // 计算的第一个residue的 曲率变化
         path[0][3] = math.polysum([k, -k / 4], [vec3.point(path[0][1], path[1][1]), vec3.point(path[0][1], path[2][1])]);
         let tan = vec3.unit(path[0][3]);
         let binormal = vec3.unit(vec3.cross(tan, path[0][4]));
         let normal = vec3.cross(binormal, tan);
         path[0][4] = vec3.cross(binormal, tan);
+        let atom = w3m.tool.getMainAtomById(mol_id, path[0][0]);
 
+        frame[0] = [path[0][0], path[0][1], path[0][2], tan, path[0][4], binormal, path[0][6]];
+        for (let i = 1; i < len; i++) {
+            // tan
+            if (i === len - 1) {
+                // 最后一个residue
+                path[i][3] = math.polysum([k, -k / 4], [vec3.point(path[i - 1][1], path[i][1]), vec3.point(path[i - 2][1], path[i][1])]);
+            } else {
+                path[i][3] = vec3.scalar(k, vec3.point(path[i - 1][1], path[i + 1][1]));
+            }
+            // curve
+            let curve = math.hermiteFit(n, path[i - 1][1], path[i][1], path[i - 1][3], path[i][3]);
+            let id = path[i - 1][0];
+            let color = path[i - 1][2];
+            let turnover = path[i - 1][6];
+            let tan = vec3.unit(path[i][3]);
+            let binormal = vec3.unit(vec3.cross(tan, path[i][4]));
+
+            path[i][4] = vec3.cross(binormal, tan);
+
+            for (let ii = 1; ii <= n; ii++) {
+                let t = ii / n;
+                let xyz = curve[ii][0];
+                let tan = vec3.unit(curve[ii][1]);
+                let normal_tmp = vec3.step(t, path[i - 1][4], path[i][4]);
+                let binormal = vec3.unit(vec3.cross(tan, normal_tmp));
+                let normal = vec3.cross(binormal, tan);
+                frame.push([id, xyz, color, tan, normal, binormal, turnover]);
+
+                if (ii === n / 2) {
+                    id = path[i][0]; // switch id, color, turnover
+                    color = path[i][2];
+                    turnover = path[i][6];
+                    frame.push([id, xyz, color, tan, normal, binormal, turnover]);
+                }
+                atom = w3m.tool.getMainAtomById(mol_id, id);
+                if (w3m.CLENGTH === 1) {
+                    if (atom) {
+                        if (w3m.mol[mol_id].residueData[atom.chainname][atom.resid].path.length === (w3m.config.smooth_segment + 1)) {
+                            continue;
+                        }
+                        w3m.mol[mol_id].residueData[atom.chainname][atom.resid].path.push(new THREE.Vector3(xyz[0] + offset.x, xyz[1] + offset.y, xyz[2] + offset.z));
+                        w3m.mol[mol_id].residueData[atom.chainname][atom.resid].binormals.push(new THREE.Vector3(binormal[0], binormal[1], binormal[2]));
+                        w3m.mol[mol_id].residueData[atom.chainname][atom.resid].normals.push(new THREE.Vector3(normal[0], normal[1], normal[2]));
+                        w3m.mol[mol_id].residueData[atom.chainname][atom.resid].tangents.push(new THREE.Vector3(tan[0], tan[1], tan[2]));
+                    }
+                }
+            }
+        }
+        w3m.CLENGTH = 0;
     },
-
     fillNucleicAcid: function (mol_id, chain_id, start, stop) {
         let pdboffset = df.GeoCenterOffset;
         let mol = w3m.mol[mol_id];
         let chain = mol.tree.main[chain_id];
 
     },
-
     getMainAtomById: function (mol_id, id) {
         let atom = w3m.mol[mol_id].atom.main[id];
         if (atom !== undefined) {
@@ -866,6 +1292,65 @@ w3m.tool = {
             };
         }
         return undefined;
+    },
+
+    // tube
+    fillMainAsCube: function (mol_id, chain_id, start, stop) {
+        this.fillMainAsCubeStripRibbonRailwayArrow(w3m.CUBE, mol_id, chain_id, start, stop);
+    },
+    fillMainAsCubeStripRibbonRailwayArrow: function (rep, mol_id, chain_id, start, stop) {
+        let mol = w3m.mol[mol_id];
+        let chain = mol.tree.main[chain_id];
+        let guide = w3m.structure.residue.amino_acid;
+        let normal_token = w3m.structure.normal.amino_acid;
+        let part = w3m_split_by_undefined(chain, start, stop);
+        w3m.CLENGTH = 1;
+        for (var i = 0, l = part.length; i < l; i++) {
+            let path = [];
+            let part_start = part[i][0];
+            let part_stop = part[i][1];
+            let last_normal = [];
+            let residueKeys = Object.keys(mol.residue[chain_id]).sort(customCompare);
+            for (let io in residueKeys) {
+                let i = residueKeys[io];
+                let st = customCompare(i, part_start);
+                let ed = customCompare(i, part_stop);
+                if (st >= 0) {
+                    if (ed <= 0) {
+                        let residue = chain[i];
+                        let atom_id = residue[guide];
+                        let normal = [0, 0, 0];
+                        let turnover = [0, 0, 0];
+                        let atom_info = mol.getMain(atom_id);
+                        if (w3m_isset(residue[normal_token[0]]) && w3m_isset(residue[normal_token[1]])) {
+                            normal = vec3.point(mol.atom.main[residue[normal_token[0]]][6],
+                                mol.atom.main[residue[normal_token[1]]][6]);
+                            // normal fix! Necessary! Important! for beta-sheel
+                            turnover = st > 0 && vec3.dot(last_normal, normal) < 0;
+                            // 调整normal朝向
+                            turnover ? normal = vec3.negate(normal) : void (0);
+                        } else {
+                            normal = [0, 0, 0];
+                            turnover = [0, 0, 0];
+                        }
+
+                        atom_info[4] = normal;
+                        atom_info[6] = turnover;
+                        path.push(atom_info);
+                        last_normal = w3m_copy(normal);
+                    }
+                }
+            }
+            let frame = [];
+            if (path.length > 2) {
+                this.naturalFrame(path, frame, mol_id);
+            }
+            switch (rep) {
+                case w3m.CUBE:
+                    this.cubeFiller(frame);
+                    break;
+            }
+        }
     },
 }
 
@@ -922,6 +1407,18 @@ w3m = {
     STICK: 113,
     SPHERE: 114,
     BALL_AND_ROD: 115,
+    CLENGTH: 0,
+
+    // END MODE
+    END_XX: 500,
+    END_OO: 501,
+    END_SS: 502,
+    END_XO: 503,
+    END_OX: 504,
+    END_SX: 505,
+    END_XS: 506,
+    END_OS: 507,
+    END_SO: 508,
 
     // COLOR MODE
     COLOR_BY_ELEMENT: 601,
@@ -985,6 +1482,10 @@ w3m = {
     LABEL_OCCUPANCY: 751,
     LABEL_B_FACTOR: 752,
     LABEL_VDW_RADIUS: 753,
+
+    INNERFACE_VARY: 1000,
+    INNERFACE_TURNOVER: 1001,
+    INNERFACE_NON_TURNOVER: 1002,
 }
 
 /* Global */
@@ -1023,7 +1524,26 @@ w3m.config = {
 
     geom_dot_as_cross: 0,
     geom_cross_radius: 0.15,
-
+    geom_helix_mode: w3m.CUBE,
+    geom_tube_round_end: 1,
     geom_backbone_as_tube: 1,
-
+    geom_helix_side_differ: 0,
+    geom_helix_side_color: 11,
+    geom_helix_inner_differ: 0,
+    geom_helix_inner_color: 12,
+    geom_cube_width: 2.0,
+    geom_cube_height: 0.4,
+    geom_cube_side_differ: 0,
+    geom_cube_side_color: 14,
+    geom_sheet_mode: w3m.ARROW,
+    geom_sheet_flat: 1,
+    geom_sheet_side_differ: 0,
+    geom_sheet_side_color: 13,
+    geom_loop_mode: w3m.TUBE,
+    geom_arrow_width: 2.0,
+    geom_arrow_height: 0.4,
+    geom_arrowhead_lower: 3.6,
+    geom_arrowhead_upper: 0.4,
+    geom_arrow_side_differ: 0,
+    geom_arrow_side_color: 18,
 }
