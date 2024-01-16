@@ -1440,13 +1440,11 @@ w3m.api = {
     refreshMain: function () {
         w3m.tool.pipelineMain();
     },
-
 }
 
 w3m = {
     // 所有信息存放处
     mol: {},
-
     // Graphics Mode ( gmode )
     // Fill Mode ( fmode )
     HIDE: 100,
@@ -1466,7 +1464,6 @@ w3m = {
     SPHERE: 114,
     BALL_AND_ROD: 115,
     CLENGTH: 0,
-
     // END MODE
     END_XX: 500,
     END_OO: 501,
@@ -1477,7 +1474,6 @@ w3m = {
     END_XS: 506,
     END_OS: 507,
     END_SO: 508,
-
     // COLOR MODE
     COLOR_BY_ELEMENT: 601,
     COLOR_BY_RESIDUE: 602,
@@ -1489,7 +1485,6 @@ w3m = {
     COLOR_BY_CHAIN_SPECTRUM: 608,
     COLOR_BY_HYDROPHOBICITY: 609,
     COLOR_BY_USER: 610,
-
     // SS
     HELIX: 150,
     HELIX_HEAD: 1500,
@@ -1503,12 +1498,10 @@ w3m = {
     LOOP_HEAD: 1520,
     LOOP_BODY: 1521,
     LOOP_FOOT: 1522,
-
     // Atom Type
     ATOM_MAIN: 1,
     ATOM_HET: 2,
     ATOM_UNK: 3,
-
     // 氨基酸链
     CHAIN_AA: 301,
     // 核酸链
@@ -1516,7 +1509,6 @@ w3m = {
     CHAIN_UNK: 303,
     // 小分子
     CHAIN_HET: 304,
-
     // LABEL
     LABEL_AREA_NONE: 700,
     LABEL_AREA_ATOM: 701,
