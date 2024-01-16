@@ -300,6 +300,34 @@ w3m.pdb = function (text) {
             o.highlight[i] = [];
             o.hide[i] = [];
         }
+        // delete ssbond in connect: found sg
+        for (let i = 0, l = o.ssbond.length; i < l; i++) {
+            let bond = o.ssbond[i];
+            let atom_id_1;
+            let atom_id_2;
+            if (o.tree.main[bond[0]]) {
+                atom_id_1 = o.atom.main[o.tree.main[bond[0]][bond[1]]["sg"]][1];
+            }
+            if (o.tree.main[bond[2]]) {
+                atom_id_2 = o.atom.main[o.tree.main[bond[2]][bond[3]]["sg"]][1];
+            }
+            let index_1 = 0;
+            let index_2 = 0;
+            if (atom_id_1 && w3m_isset(o.connect[atom_id_1])) {
+                index_1 = o.connect[atom_id_1].indexOf(atom_id_2);
+                index_1 >= 0 ? o.connect[atom_id_1].splice(index_1, 1) : void (0);
+            }
+            if (index_2 && w3m_isset(o.connect[atom_id_2])) {
+                index_2 = o.connect[atom_id_2].indexOf(atom_id_1);
+                index_2 >= 0 ? o.connect[atom_id_2].splice(index_2, 1) : void (0);
+            }
+        }
+        // delete [] Connect
+        for (let i in o.connect) {
+            if (!o.connect[i].length) {
+                delete (o.connect[i]);
+            }
+        }
         // split helix and sheet
         for (let i in o.chain) {
             if (o.chain[i] !== w3m.CHAIN_AA) {
@@ -596,13 +624,16 @@ w3m.tool = {
         this.clearExt();
         this.plugin();
         this.fillMain();
-        this.fillExt();
         this.bufferMain();
-        this.bufferExt();
-        this.recycle();
     },
 
-    // todo
+    bufferMain: function () {
+        w3m.vertex_main_point = [];
+        w3m.vertex_main_line = [];
+        w3m.vertex_main_triangle = [];
+        w3m.vertex_main_line_strip = [];
+        w3m.vertex_main_triangle_strip = [];
+    },
     clear: function () {
         this.clearMain();
         this.clearHet();
@@ -650,6 +681,28 @@ w3m.tool = {
                 mol.label_area_real[res] = mol.label_area[res];
             }
         }
+
+        // color -> color real
+        for (let i in w3m.mol) {
+            let mol = w3m.mol[i],
+                highlight = mol.highlight,
+                highlight_enable = false;
+            for (let j in highlight) {
+                if (highlight[j].length > 0) {
+                    highlight_enable = true;
+                    break;
+                }
+            }
+            mol.atom.main.forEach(function (atom, atom_id) {
+                let chain_id = atom[4],
+                    residue_id = atom[5];
+                mol.color_real[atom_id] = highlight_enable && highlight[chain_id].indexOf(residue_id) < 0 ?
+                    1 : mol.color.main[atom_id];
+            });
+            mol.color.het.forEach(function (color_id, atom_id) {
+                mol.color_real[atom_id] = highlight_enable ? 1 : color_id;
+            });
+        }
     },
 
     fillMain: function () {
@@ -682,8 +735,9 @@ w3m.tool = {
             }
         });
     },
+
     /* mol -> fillqueue*/
-    mol2fillqueueMain: function (mol_id) {
+    mol2fillQueueMain: function (mol_id) {
         let mol = w3m.mol[mol_id];
         let rep_default = w3m.config.rep_mode_main;
         for (let i in mol.rep_real) {
@@ -983,6 +1037,7 @@ w3m.tool = {
             }
         }
     },
+
     cubeFiller: function (frame, msg) {
         msg = msg || {};
         let side_differ = w3m_isset(msg.side_differ) ? msg.side_differ : w3m.config.geom_cube_side_differ;
@@ -990,14 +1045,15 @@ w3m.tool = {
         let inner_differ = w3m_isset(msg.inner_differ) ? msg.inner_differ : false;
         let inner_face = w3m_isset(msg.inner_face) ? msg.inner_face : false;
         let shell = [];
-        let shell_1 = this.cubeShell(frame, shell, {
+        this.cubeShell(frame, shell, {
             side_differ: side_differ,
             side_color: side_color,
             inner_differ: inner_differ,
             inner_face: inner_face
         });
-        return shell_1;
+        return shell;
     },
+
     arrowFiller: function (frame, msg, mol_id) {
         msg = msg || {};
         let side_differ = w3m_isset(msg.side_differ) ? msg.side_differ : w3m.config.geom_arrow_side_differ;
@@ -1060,6 +1116,7 @@ w3m.tool = {
         });
         return shell;
     },
+
     arrowheadShell: function (frame, shell, msg) {
         msg = msg || {};
         var width_max = w3m_isset(msg.width_max) ? msg.width_max : w3m.config.geom_arrowhead_lower,
@@ -1108,6 +1165,7 @@ w3m.tool = {
             ];
         }
     },
+
     zigzagFix: function (path) {
         let len = path.length;
         let n = w3m.config.smooth_segment % 2 ? w3m.config.smooth_segment + 1 : w3m.config.smooth_segment;
@@ -1159,6 +1217,7 @@ w3m.tool = {
         }
         return fixed;
     },
+
     cubeShell: function (frame, shell, msg) {
         msg = msg || {};
         let width = msg.width || w3m.config.geom_cube_width,
@@ -1205,8 +1264,8 @@ w3m.tool = {
                 [id, vec3.plus(o, e1_m_e2), color_side, e1]
             ];
         }
-        return shell;
     },
+
     naturalFrame: function (path, frame, mol_id) {
         // path -> all atoms
         let offset = df.GeoCenterOffset;
@@ -1276,12 +1335,7 @@ w3m.tool = {
         }
         w3m.CLENGTH = 0;
     },
-    fillNucleicAcid: function (mol_id, chain_id, start, stop) {
-        let pdboffset = df.GeoCenterOffset;
-        let mol = w3m.mol[mol_id];
-        let chain = mol.tree.main[chain_id];
 
-    },
     getMainAtomById: function (mol_id, id) {
         let atom = w3m.mol[mol_id].atom.main[id];
         if (atom !== undefined) {
@@ -1298,14 +1352,15 @@ w3m.tool = {
     fillMainAsCube: function (mol_id, chain_id, start, stop) {
         this.fillMainAsCubeStripRibbonRailwayArrow(w3m.CUBE, mol_id, chain_id, start, stop);
     },
+
     fillMainAsCubeStripRibbonRailwayArrow: function (rep, mol_id, chain_id, start, stop) {
         let mol = w3m.mol[mol_id];
         let chain = mol.tree.main[chain_id];
         let guide = w3m.structure.residue.amino_acid;
         let normal_token = w3m.structure.normal.amino_acid;
         let part = w3m_split_by_undefined(chain, start, stop);
-        w3m.CLENGTH = 1;
-        for (var i = 0, l = part.length; i < l; i++) {
+        for (let i = 0, l = part.length; i < l; i++) {
+            w3m.CLENGTH = 1;
             let path = [];
             let part_start = part[i][0];
             let part_stop = part[i][1];
@@ -1319,6 +1374,9 @@ w3m.tool = {
                     if (ed <= 0) {
                         let residue = chain[i];
                         let atom_id = residue[guide];
+                        if (!w3m_isset(atom_id = residue[guide])) {
+                            continue;
+                        }
                         let normal = [0, 0, 0];
                         let turnover = [0, 0, 0];
                         let atom_info = mol.getMain(atom_id);
@@ -1490,7 +1548,6 @@ w3m = {
 
 /* Global */
 w3m.global = {
-
     // limit
     limit: {
         x: [],
@@ -1503,7 +1560,6 @@ w3m.global = {
         b_factor: [0, 0],
         b_factor_backbone: [0, 0]
     },
-
 }
 
 /* Config */
