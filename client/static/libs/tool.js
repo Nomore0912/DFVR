@@ -4,10 +4,9 @@
 df.tool = {
 
     getMainAtom: function (pdbId, id) {
-        let scope = this;
         let atom = w3m.mol[pdbId].atom.main[id];
         if (atom !== undefined) {
-            return scope.getAtomById(pdbId, atom, 'main');
+            return this.getAtomById(pdbId, atom, 'main');
         } else {
             return undefined;
         }
@@ -50,7 +49,27 @@ df.tool = {
             color: color
         };
     },
-
+    isDictEmpty: function (dict) {
+        return Object.keys(dict).length === 0;
+    },
+    getFirstAtomIdByChain: function (pdbId, chainName) {
+        let first_resid = Object.keys(w3m.mol[pdbId].rep[chainName])[0];
+        return this.getFirstAtomByResidueId(first_resid, chainName)[0];
+    },
+    getFirstAtomByResidueId: function (pdbId, residueId, chainName) {
+        let atoms = w3m.mol[pdbId].atom.main;
+        let atom = [];
+        for (let atomId in atoms) {
+            if (atoms[atomId][4] === chainName) {
+                let p_residueId = atoms[atomId][5];
+                if (residueId === p_residueId) {
+                    atom = atoms[atomId];
+                    break;
+                }
+            }
+        }
+        return atom;
+    },
     getColorByIndex: function (pdbId, id, structure) {
         let rId = w3m.mol[pdbId].color[structure][id];
         if (rId) {
@@ -73,5 +92,43 @@ df.tool = {
         link.href = URL.createObjectURL(blob);
         link.download = filename || 'ydf.pdb'
         link.click();
-    }
+    },
+
+    getHetAtom: function (molId, id) {
+        let atom = w3m.mol[molId].atom.het[id];
+        if (atom !== undefined) {
+            return this.getAtomById(molId, atom, 'het');
+        }
+    },
+
+    // clear tools
+    clearMesh: function (mesh) {
+        if (mesh.geometry) {
+            mesh.geometry.dispose();
+        }
+        if (mesh.material && mesh.material.dispose) {
+            mesh.material.dispose();
+        }
+        mesh = null;
+        return undefined;
+    },
+    clearChainIndex: function (group) {
+        if (group.children !== undefined && group.children.length > 0) {
+            let child = group.children;
+            for (let i = 0; i < child.length; i++) {
+                if (child[i] instanceof THREE.Mesh) {
+                    this.clearMesh(child[i]);
+                }
+            }
+            group.children = [];
+        }
+    },
+    clearGroupIndex: function (group) {
+        if (group !== undefined) {
+            for (let chainId in group) {
+                let chain = group[chainId];
+                this.clearChainIndex(chain);
+            }
+        }
+    },
 }

@@ -1,10 +1,10 @@
 /* Global */
 var w3m, canvas, gl;
 
-w3m.pdb = function (text) {
+w3m.pdb = function (text, pdbId) {
     let o = {
         type: 'pdb',
-        id: '',
+        id: pdbId,
         info: {},
         ss: {},
         helix: {},
@@ -100,7 +100,7 @@ w3m.pdb = function (text) {
             o.residueTypeList = Object.keys(o.residueTypeList);
         }
         w3m.mol[o.id] = o;
-        // w3m.global.mol = o.id;
+        df.pdbId.push(o.id);
         // Color
         w3m.tool.updateMolColorMap(o.id);
     }
@@ -416,7 +416,6 @@ w3m.pdb = function (text) {
         }
     };
     let doHeader = function (s) {
-        o.id = w3m_sub(s, 63, 66);
         o.info.id = w3m_sub(s, 63, 66).toUpperCase();
         if (o.id === "none") {
             o.id = 'yang'
@@ -544,8 +543,8 @@ w3m.tool = {
         }
     },
     updateMolColorMapHet: function (mol_id) {
-        var mol = w3m.mol[mol_id];
-        var array = w3m.color.element;
+        let mol = w3m.mol[mol_id];
+        let array = w3m.color.element;
         switch (w3m.config.color_mode_het) {
             case w3m.COLOR_BY_ELEMENT:
                 array = w3m.color.element;
@@ -1229,6 +1228,7 @@ w3m.tool = {
             inner_differ = w3m_isset(msg.inner_differ) ? msg.inner_differ : false,
             inner_color = w3m.config.geom_helix_inner_color,
             inner_face = w3m_isset(msg.inner_face) ? msg.inner_face : w3m.INNERFACE_VARY;
+
         for (let i = 0, l = frame.length; i < l; i++) {
             let id = frame[i][0],
                 o = frame[i][1],
@@ -1410,6 +1410,7 @@ w3m.tool = {
             }
         }
     },
+
 }
 
 /* API */
@@ -1595,3 +1596,120 @@ w3m.config = {
     geom_arrow_side_differ: 0,
     geom_arrow_side_color: 18,
 }
+
+w3m.ajax = (function () {
+    var io = new XMLHttpRequest(),
+        id = '',
+        url = '',
+        url_index = 0,
+        callback = null;
+    drug = false;
+    var last = ".pdb";
+    //io.timeout = 180000; // timeout ms
+    io.onprogress = function (e) {
+        // PDB.tool.showSegmentholder(true,'NOT FOUND : Fail to load PDF file !');
+        // if (e.lengthComputable) {
+        // PDB.tool.setProgressBar(e.loaded, e.total);
+
+        var loaded = PDB.tool.toHumanByte(e.loaded);
+        if (drug == false) {
+            PDB.tool.showSegmentholder(true, "Loading file " + loaded);
+        }
+
+        // PDB.tool.printProgress(type + " map: " + mapid + " loaded, size(" + loaded + "/" + total + ") " + ratio);
+        // console.log(e.loaded);
+// }
+    };
+    io.onload = function () {
+        if (this.status == 200) {
+            var responseText = io.responseText;
+            if (last == '.cif') {
+                responseText = loadCIF(responseText, 1);
+            }
+
+            callback(responseText);
+        } else {
+            if (w3m_isset(PDB.remoteUrl[++url_index])) {
+                this.get(id, callback);
+            } else {
+                url_index = 0;
+
+                PDB.tool.printProgress('pdb file not found!');
+                PDB.tool.showSegmentholder(false);
+                PDB.tool.showSegmentholder(true, 'NOT FOUND : Fail to load PDF file !');
+                setTimeout(function (e) {
+                    PDB.tool.showSegmentholder(false);
+                }, 5000)
+            }
+        }
+    };
+    io.onabort = function () {
+        url_index = 0;
+    },
+        io.ontimeout = function () {
+            if (w3m_isset(PDB.remoteUrl[++url_index])) {
+                if (drug) {
+                    this.getDrug(id, callback);
+                } else {
+                    this.get(id, callback);
+                }
+            } else {
+                url_index = 0;
+            }
+        },
+        io.onerror = function (e) {
+            url_index++;
+            this.get(id, callback);
+        },
+        io.get = function (mol_id, fn) {
+            drug = false;
+            if (mol_id.indexOf("http://") != -1) {
+                //debugger;
+                url = mol_id;
+            } else if (mol_id.indexOf("https://") != -1) {
+                url = mol_id;
+                //debugger;
+            } else {
+                if (url_index > 0 && last == '.pdb') {
+                    url_index--;
+                    last = '.cif';
+                } else {
+                    if (url_index > 0 && last != '.cif') {
+                        url_index--;
+                    }
+                    last = '.pdb';
+                }
+                url = PDB.remoteUrl[url_index] + mol_id + last;
+            }
+            console.log(url);
+            id = mol_id;
+            callback = fn;
+            this.open('GET', url, true);
+            this.send();
+        };
+    io.getResidue = function (resName, fn) {
+        resName = resName.toUpperCase();
+        url = SERVERURL + "/data/amino_acid/" + resName + '.pdb';
+        callback = fn;
+        drug = false;
+        this.open('GET', url, true);
+        this.send();
+    };
+    io.getDrug = function (mol_id, dbname, fn) {
+        id = mol_id;
+        url = PDB.DRUBDB_URL[dbname] + mol_id + '.pdb';
+        callback = fn;
+        drug = true;
+        this.open('GET', url, true);
+        this.send();
+    };
+    io.getDocking = function (path, dockingName, fn) {
+        id = dockingName;
+        url = path + "/" + dockingName;
+        callback = fn;
+        drug = true;
+        this.open('GET', url, true);
+        this.send();
+    };
+    return io;
+})();
