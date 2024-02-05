@@ -6,16 +6,19 @@ df = {
     remoteUrl: ['https://www.rcsb.org/pdb/files/', 'data/'],
     isShowWater: false,
 
+    // SURFACE
+    SURFACE: 14,
+    SURFACE_TYPE: 1,
+    CURRENT_SURFACE_TYPE: 1,
+    SURFACE_OPACITY: 1.0,
+    SURFACE_WIREFRAME: false,
+
     // 重新加载时需要初始化的参数
     pdbId: [],
 
-    // config
-    config: {
-        water_sphere_w: 8,
 
-    },
     // all pdb info group, 这里包含 pdb 用于展示的全部属性
-    GROUP: {},
+    GROUP: new THREE.Group(),
     GROUP_HET_INDEX: {},
     GROUP_MAIN_INDEX: {},
     GROUP_STRUCTURE_INDEX: {},
@@ -57,7 +60,7 @@ df = {
     RIBBON_STRIP: 11,
     RIBBON_RAILWAY: 12,
     CARTOON_SSE: 13,
-    SURFACE: 14,
+
     HET: 50,
     HET_LINE: 51,
     HET_SPHERE: 52,
@@ -65,4 +68,22 @@ df = {
     HET_BALL_ROD: 54,
     HET_WATER: 55,
     HET_IRON: 56,
+
+    // docking
+    DOCKING_BUTTON: [],
+}
+
+    // config
+df.config = {
+    mainMode: df.CARTOON_SSE,
+    hetMode: df.HET_STICK,
+    water_sphere_w: 8,
+    surface: df.SURFACE,
+    stick_sphere_w: 4,
+    stick_radius: 3,
+    ball_rod_radius: 0.12,
+    tube_radius: 0.2,
+    tubesegment: 5,
+    ellipse_radius: 0.21,
+    ellipse_radius_multiple: 5,
 }

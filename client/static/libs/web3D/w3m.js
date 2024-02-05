@@ -1,6 +1,102 @@
 /* Global */
 var w3m, canvas, gl;
 
+w3m = {
+    // 所有信息存放处
+    mol: {},
+    // Graphics Mode ( gmode )
+    // Fill Mode ( fmode )
+    HIDE: 100,
+    DOT: 101,
+    LINE: 102,
+    BACKBONE: 103,
+    TUBE: 104,
+    CARTOON: 105,
+    PUTTY: 106,
+    CUBE: 107,
+    STRIP: 108,
+    RIBBON: 109,
+    RAILWAY: 110,
+    ARROW: 111,
+    CYLINDER: 112,
+    STICK: 113,
+    SPHERE: 114,
+    BALL_AND_ROD: 115,
+    CLENGTH: 0,
+    // END MODE
+    END_XX: 500,
+    END_OO: 501,
+    END_SS: 502,
+    END_XO: 503,
+    END_OX: 504,
+    END_SX: 505,
+    END_XS: 506,
+    END_OS: 507,
+    END_SO: 508,
+    // COLOR MODE
+    COLOR_BY_ELEMENT: 601,
+    COLOR_BY_RESIDUE: 602,
+    COLOR_BY_SS: 603,
+    COLOR_BY_CHAIN: 604,
+    COLOR_BY_REP: 605,
+    COLOR_BY_B_FACTOR: 606,
+    COLOR_BY_SPECTRUM: 607,
+    COLOR_BY_CHAIN_SPECTRUM: 608,
+    COLOR_BY_HYDROPHOBICITY: 609,
+    COLOR_BY_USER: 610,
+    // SS
+    HELIX: 150,
+    HELIX_HEAD: 1500,
+    HELIX_BODY: 1501,
+    HELIX_FOOT: 1502,
+    SHEET: 151,
+    SHEET_HEAD: 1510,
+    SHEET_BODY: 1511,
+    SHEET_FOOT: 1512,
+    LOOP: 152,
+    LOOP_HEAD: 1520,
+    LOOP_BODY: 1521,
+    LOOP_FOOT: 1522,
+    // Atom Type
+    ATOM_MAIN: 1,
+    ATOM_HET: 2,
+    ATOM_UNK: 3,
+    // 氨基酸链
+    CHAIN_AA: 301,
+    // 核酸链
+    CHAIN_NA: 302,
+    CHAIN_UNK: 303,
+    // 小分子
+    CHAIN_HET: 304,
+    // LABEL
+    LABEL_AREA_NONE: 700,
+    LABEL_AREA_ATOM: 701,
+    LABEL_AREA_BACKBONE: 702,
+    LABEL_AREA_RESIDUE: 703,
+    LABEL_AREA_CHAIN: 704,
+    LABEL_AREA_MOL: 705,
+
+    LABEL_ATOM_NAME: 711,
+    LABEL_ATOM_ID: 712,
+    LABEL_ATOM_NAME_AND_ID: 713,
+    LABEL_ELEMENT: 721,
+    LABEL_ELEMENT_AND_ID: 722,
+    LABEL_RESIDUE_NAME: 731,
+    LABEL_RESIDUE_ID: 732,
+    LABEL_RESIDUE_NAME_AND_ID: 733,
+    LABEL_CHAIN_ID: 741,
+    LABEL_CHAIN_AND_RESIDUE: 742,
+    LABEL_CHAIN_AND_RESIDUE_ID: 743,
+    LABEL_MIX: 744,
+    LABEL_OCCUPANCY: 751,
+    LABEL_B_FACTOR: 752,
+    LABEL_VDW_RADIUS: 753,
+
+    INNERFACE_VARY: 1000,
+    INNERFACE_TURNOVER: 1001,
+    INNERFACE_NON_TURNOVER: 1002,
+}
+
 w3m.pdb = function (text, pdbId) {
     let o = {
         type: 'pdb',
@@ -1441,102 +1537,6 @@ w3m.api = {
     refreshMain: function () {
         w3m.tool.pipelineMain();
     },
-}
-
-w3m = {
-    // 所有信息存放处
-    mol: {},
-    // Graphics Mode ( gmode )
-    // Fill Mode ( fmode )
-    HIDE: 100,
-    DOT: 101,
-    LINE: 102,
-    BACKBONE: 103,
-    TUBE: 104,
-    CARTOON: 105,
-    PUTTY: 106,
-    CUBE: 107,
-    STRIP: 108,
-    RIBBON: 109,
-    RAILWAY: 110,
-    ARROW: 111,
-    CYLINDER: 112,
-    STICK: 113,
-    SPHERE: 114,
-    BALL_AND_ROD: 115,
-    CLENGTH: 0,
-    // END MODE
-    END_XX: 500,
-    END_OO: 501,
-    END_SS: 502,
-    END_XO: 503,
-    END_OX: 504,
-    END_SX: 505,
-    END_XS: 506,
-    END_OS: 507,
-    END_SO: 508,
-    // COLOR MODE
-    COLOR_BY_ELEMENT: 601,
-    COLOR_BY_RESIDUE: 602,
-    COLOR_BY_SS: 603,
-    COLOR_BY_CHAIN: 604,
-    COLOR_BY_REP: 605,
-    COLOR_BY_B_FACTOR: 606,
-    COLOR_BY_SPECTRUM: 607,
-    COLOR_BY_CHAIN_SPECTRUM: 608,
-    COLOR_BY_HYDROPHOBICITY: 609,
-    COLOR_BY_USER: 610,
-    // SS
-    HELIX: 150,
-    HELIX_HEAD: 1500,
-    HELIX_BODY: 1501,
-    HELIX_FOOT: 1502,
-    SHEET: 151,
-    SHEET_HEAD: 1510,
-    SHEET_BODY: 1511,
-    SHEET_FOOT: 1512,
-    LOOP: 152,
-    LOOP_HEAD: 1520,
-    LOOP_BODY: 1521,
-    LOOP_FOOT: 1522,
-    // Atom Type
-    ATOM_MAIN: 1,
-    ATOM_HET: 2,
-    ATOM_UNK: 3,
-    // 氨基酸链
-    CHAIN_AA: 301,
-    // 核酸链
-    CHAIN_NA: 302,
-    CHAIN_UNK: 303,
-    // 小分子
-    CHAIN_HET: 304,
-    // LABEL
-    LABEL_AREA_NONE: 700,
-    LABEL_AREA_ATOM: 701,
-    LABEL_AREA_BACKBONE: 702,
-    LABEL_AREA_RESIDUE: 703,
-    LABEL_AREA_CHAIN: 704,
-    LABEL_AREA_MOL: 705,
-
-    LABEL_ATOM_NAME: 711,
-    LABEL_ATOM_ID: 712,
-    LABEL_ATOM_NAME_AND_ID: 713,
-    LABEL_ELEMENT: 721,
-    LABEL_ELEMENT_AND_ID: 722,
-    LABEL_RESIDUE_NAME: 731,
-    LABEL_RESIDUE_ID: 732,
-    LABEL_RESIDUE_NAME_AND_ID: 733,
-    LABEL_CHAIN_ID: 741,
-    LABEL_CHAIN_AND_RESIDUE: 742,
-    LABEL_CHAIN_AND_RESIDUE_ID: 743,
-    LABEL_MIX: 744,
-    LABEL_OCCUPANCY: 751,
-    LABEL_B_FACTOR: 752,
-    LABEL_VDW_RADIUS: 753,
-
-    INNERFACE_VARY: 1000,
-    INNERFACE_TURNOVER: 1001,
-    INNERFACE_NON_TURNOVER: 1002,
 }
 
 /* Global */

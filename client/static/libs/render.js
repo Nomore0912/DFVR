@@ -36,9 +36,9 @@ df.render = {
     },
     initSceneGroup: function () {
         // df.group
-        for (let gName in df.GROUP_DICT) {
-            df.GROUP[gName] = new THREE.Group();
-        }
+        // for (let gName in df.GROUP_DICT) {
+        //     df.GROUP[gName] = new THREE.Group();
+        // }
     },
     initRender: function () {
         let renderer = new THREE.WebGLRenderer({
@@ -84,7 +84,7 @@ df.render = {
         // Scene
         scene = this.vrScene();
         // Camera
-        camera = this.vrCamera;
+        camera = this.vrCamera();
         // 移动 Camera
         canon.add(camera);
         scene.add(canon);
@@ -107,19 +107,22 @@ df.render = {
 
         // xr
         leftController = this.createController(renderer, canon, 0);
-        rightController = this.createController(renderer, canon, 1);
+        // rightController = this.createController(renderer, canon, 1);
 
-        let controllerModelFactory = new THREE.XRControllerModelFactory();
-        leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
-        rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
+        // let controllerModelFactory = new THREE.XRControllerModelFactory();
+        // leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
+        // rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
         // 射线
-        let leftLine = this.createControllerLine();
-        let rightLine = this.createControllerLine();
-        leftController.add(leftLine);
-        rightController.add(rightLine);
+        // let leftLine = this.createControllerLine();
+        // let rightLine = this.createControllerLine();
+        // leftController.add(leftLine);
+        // rightController.add(rightLine);
 
         rayCaster = new THREE.Raycaster();
         window.addEventListener('resize', onWindowResize, false);
+        camera.updateProjectionMatrix();
+        controls.update();
+        renderer.render(scene, camera);
 
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -127,8 +130,18 @@ df.render = {
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
     },
-    clear: function (mode) {
+    // todo
+    clear: function (mode, pdbId) {
         THREE.Cache.clear();
+        switch (mode) {
+            case 0:
+                for (let modeKey in df.GROUP_MAIN_INDEX[pdbId]) {
+                    df.tool.clearGroupIndex(df.GROUP_MAIN_INDEX[pdbId]);
+                }
+                break;
+            case 1:
+                df.tool.clearGroupIndex(df.GROUP_HET);
+                break;
+        }
     },
-
 }

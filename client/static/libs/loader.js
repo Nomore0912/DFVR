@@ -1,5 +1,5 @@
 df.loader = {
-    load: function (file, type) {
+    load: function (file, type, callback) {
         let pdbId;
         switch (type) {
             case 'file':
@@ -19,6 +19,7 @@ df.loader = {
                 this.loadTextFromRequest(pdbId, file, this.callBackLoading);
                 break;
         }
+        callback();
     },
     // todo 需要想一想 如何限制空间
     getCenterOffset: function () {
@@ -39,10 +40,11 @@ df.loader = {
         w3m.api.switchRepModeMain(w3m.CUBE);
         w3m.api.switchRepModeMain(w3m.CARTOON);
 
-        df.GROUP[pdbId] = {};
-        df.GROUP[pdbId]['main'] = {};
-        df.GROUP[pdbId]['het'] = {};
-        df.GROUP[pdbId]['water'] = {};
+        df.GROUP[pdbId] = new THREE.Group();
+        df.GROUP[pdbId]['main'] = new THREE.Group();
+        df.GROUP[pdbId]['het'] = new THREE.Group();
+        df.GROUP[pdbId]['water'] = new THREE.Group();
+        df.GROUP[pdbId]['surface'] = new THREE.Group();
         df.GROUP_MAIN_INDEX[pdbId] = [];
         df.GROUP_HET_INDEX[pdbId] = [];
         df.GROUP_STRUCTURE_INDEX[pdbId] = [];

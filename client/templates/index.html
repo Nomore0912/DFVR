@@ -3,8 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>DFVR</title>
+    <script type="text/javascript" src="../static/js/three.js"></script>
+    <script type="text/javascript" src="../static/js/XRControllerModelFactory.js"></script>
+    <script type="text/javascript" src="../static/js/VRButton.js"></script>
+    <script type="text/javascript" src="../static/js/controls/OrbitControls.js"></script>
+
+    <script type="text/javascript" src="../static/libs/web3D/extension.js"></script>
+    <script type="text/javascript" src="../static/libs/web3D/math.js"></script>
+    <script type="text/javascript" src="../static/libs/web3D/w3m.js"></script>
+    <script type="text/javascript" src="../static/libs/web3D/static.js"></script>
+
+    <script type="text/javascript" src="../static/libs/core.js"></script>
+    <script type="text/javascript" src="../static/libs/loader.js"></script>
+    <script type="text/javascript" src="../static/libs/render.js"></script>
+    <script type="text/javascript" src="../static/libs/tool.js"></script>
+    <script type="text/javascript" src="../static/libs/drawer.js"></script>
+    <script type="text/javascript" src="../static/libs/painter.js"></script>
+    <script type="text/javascript" src="../static/libs/controller.js"></script>
+    <script type="text/javascript" src="../static/libs/surface.js"></script>
 </head>
 <body>
-    <h1>{{ context.message }}</h1>
+<div id="container"></div>
+<div id="SideToolbar" class="panel">
+    <LABEL onclick="switchMenu('Docking')">Docking</LABEL>
+    <span class="subMenu" id="Docking">
+
+    </span>
+</div>
+<button id="vrMode">VR Mode</button>
+<script type="text/javascript" src="../static/libs/index.js"></script>
+
 </body>
 </html>
