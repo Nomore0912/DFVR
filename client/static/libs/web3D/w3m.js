@@ -117,6 +117,7 @@ w3m.pdb = function (text, pdbId) {
         label_area_real: {},
         single: {},
         ssbond: [],
+        connect: {},
         highlight: {},
         hide: {},
         color: {
@@ -337,6 +338,7 @@ w3m.pdb = function (text, pdbId) {
     // Het connect with Main protein
     let doConnect = function (s) {
         let atom_id_main = parseInt(w3m_sub(s, 7, 11));
+
         w3m_isset(o.connect[atom_id_main]) ? void (0) : o.connect[atom_id_main] = [];
         let other = function (start, stop) {
             let atom_id_other = parseInt(w3m_sub(s, start, stop));
@@ -517,7 +519,15 @@ w3m.pdb = function (text, pdbId) {
             o.id = 'yang'
         }
         o.info.classification = w3m_capword(w3m_sub(s, 11, 50));
+    };
+    switch (typeof text) {
+        case 'string':
+            parse(text);
+            break;
+        default:
+            return false;
     }
+    return o;
 }
 
 /* Tool */
@@ -801,12 +811,13 @@ w3m.tool = {
     },
 
     fillMain: function () {
+        let danFeng = this;
         if (df.residue && df.residue !== "") {
-            this.mol2fillqueueMain(df.residue);
+            this.mol2fillQueueMain(df.residue);
         } else {
             // mol -> fillqueue
             for (let i in w3m.mol) {
-                this.mol2fillqueueMain(i);
+                this.mol2fillQueueMain(i);
             }
         }
         // fillqueue -> vertex
@@ -814,16 +825,16 @@ w3m.tool = {
             // q[1], 结构类型
             switch (q[1]) {
                 case w3m.LINE:
-                    this.fillMainAsLine(q[2], q[3], q[4], q[5]);
+                    danFeng.fillMainAsLine(q[2], q[3], q[4], q[5]);
                     break;
                 case w3m.BACKBONE:
-                    this.fillMainAsBackbone(q[2], q[3], q[4], q[5]);
+                    danFeng.fillMainAsBackbone(q[2], q[3], q[4], q[5]);
                     break;
                 case w3m.CARTOON:
-                    this.fillMainAsCartoon(q[2], q[3], q[4], q[5]);
+                    danFeng.fillMainAsCartoon(q[2], q[3], q[4], q[5]);
                     break;
                 case w3m.CUBE:
-                    this.fillMainAsCube(q[2], q[3], q[4], q[5]);
+                    danFeng.fillMainAsCube(q[2], q[3], q[4], q[5]);
                     break;
                 default:
                     void (0);
@@ -1515,11 +1526,11 @@ w3m.api = {
         w3m.config.rep_mode_main = rep_mode;
         if (pdbId) {
             // 指定PDB展示的结构
-            w3m.tool.updateMolRepMap(pdbId);
+            w3m.api.updateMolRepMap(pdbId);
             w3m.config.color_mode_main === w3m.COLOR_BY_REP ? w3m.tool.updateMolColorMapMain(residue) : void (0);
         } else {
             for (let i in w3m.mol) {
-                w3m.tool.updateMolRepMap(i);
+                w3m.api.updateMolRepMap(i);
                 w3m.config.color_mode_main === w3m.COLOR_BY_REP ? w3m.tool.updateMolColorMapMain(i) : void (0);
             }
         }
@@ -1607,38 +1618,26 @@ w3m.ajax = (function () {
     var last = ".pdb";
     //io.timeout = 180000; // timeout ms
     io.onprogress = function (e) {
-        // PDB.tool.showSegmentholder(true,'NOT FOUND : Fail to load PDF file !');
-        // if (e.lengthComputable) {
-        // PDB.tool.setProgressBar(e.loaded, e.total);
-
-        var loaded = PDB.tool.toHumanByte(e.loaded);
-        if (drug == false) {
-            PDB.tool.showSegmentholder(true, "Loading file " + loaded);
+        var loaded = df.tool.toHumanByte(e.loaded);
+        if (drug === false) {
+            df.tool.showSegmentHolder(true, "Loading file " + loaded);
         }
-
-        // PDB.tool.printProgress(type + " map: " + mapid + " loaded, size(" + loaded + "/" + total + ") " + ratio);
-        // console.log(e.loaded);
-// }
     };
     io.onload = function () {
         if (this.status == 200) {
             var responseText = io.responseText;
-            if (last == '.cif') {
-                responseText = loadCIF(responseText, 1);
-            }
-
             callback(responseText);
         } else {
-            if (w3m_isset(PDB.remoteUrl[++url_index])) {
+            if (w3m_isset(df.remoteUrl[++url_index])) {
                 this.get(id, callback);
             } else {
                 url_index = 0;
 
-                PDB.tool.printProgress('pdb file not found!');
-                PDB.tool.showSegmentholder(false);
-                PDB.tool.showSegmentholder(true, 'NOT FOUND : Fail to load PDF file !');
+                df.tool.printProgress('pdb file not found!');
+                df.tool.showSegmentHolder(false);
+                df.tool.showSegmentHolder(true, 'NOT FOUND : Fail to load PDF file !');
                 setTimeout(function (e) {
-                    PDB.tool.showSegmentholder(false);
+                    df.tool.showSegmentholder(false);
                 }, 5000)
             }
         }
@@ -1647,7 +1646,7 @@ w3m.ajax = (function () {
         url_index = 0;
     },
         io.ontimeout = function () {
-            if (w3m_isset(PDB.remoteUrl[++url_index])) {
+            if (w3m_isset(df.remoteUrl[++url_index])) {
                 if (drug) {
                     this.getDrug(id, callback);
                 } else {
@@ -1679,7 +1678,7 @@ w3m.ajax = (function () {
                     }
                     last = '.pdb';
                 }
-                url = PDB.remoteUrl[url_index] + mol_id + last;
+                url = df.remoteUrl[url_index] + mol_id + last;
             }
             console.log(url);
             id = mol_id;
@@ -1697,7 +1696,7 @@ w3m.ajax = (function () {
     };
     io.getDrug = function (mol_id, dbname, fn) {
         id = mol_id;
-        url = PDB.DRUBDB_URL[dbname] + mol_id + '.pdb';
+        url = df.DRUBDB_URL[dbname] + mol_id + '.pdb';
         callback = fn;
         drug = true;
         this.open('GET', url, true);

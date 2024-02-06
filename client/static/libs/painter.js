@@ -142,7 +142,7 @@ df.painter = {
                 df.painter.showBallRodByResidue(pdbId, chainId, resId);
                 break;
             case df.CARTOON_SSE:
-                df.painter.showCartoonSSEByResidue(chainId, resid, sel, showLow, isshow);
+                df.painter.showCartoonSSEByResidue(pdbId, chainId, resId);
                 break;
         }
     },
@@ -223,12 +223,17 @@ df.painter = {
                 }
                 if (preResidue !== undefined && residueKeys[resInd - 1] !== undefined) {
                     if (customCompare(residueKeys[resInd - 1], resId) === -1) {
+                        console.log("preResidue.path[preResidue.path.length - 1]", preResidue.path[preResidue.path.length - 1])
+                        console.log("preResidue.path",preResidue.path)
+                        console.log("preResidue",preResidue)
                         path = [preResidue.path[preResidue.path.length - 1]].concat(path);
                     }
                 }
                 break;
         }
         if (path.length > 0) {
+            console.log("path", path);
+            console.log("type", type);
             df.drawer.drawTube(
                 path, radius, caAtom.color, caAtom, pdbId, 'main', caAtom.chainName
             );

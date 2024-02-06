@@ -107,16 +107,16 @@ df.render = {
 
         // xr
         leftController = this.createController(renderer, canon, 0);
-        // rightController = this.createController(renderer, canon, 1);
+        rightController = this.createController(renderer, canon, 1);
 
-        // let controllerModelFactory = new THREE.XRControllerModelFactory();
-        // leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
-        // rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
+        let controllerModelFactory = new THREE.XRControllerModelFactory();
+        leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
+        rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
         // 射线
-        // let leftLine = this.createControllerLine();
-        // let rightLine = this.createControllerLine();
-        // leftController.add(leftLine);
-        // rightController.add(rightLine);
+        let leftLine = this.createControllerLine();
+        let rightLine = this.createControllerLine();
+        leftController.add(leftLine);
+        rightController.add(rightLine);
 
         rayCaster = new THREE.Raycaster();
         window.addEventListener('resize', onWindowResize, false);

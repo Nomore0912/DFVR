@@ -45,7 +45,7 @@ var w3m_split_by_difference = function (dict) {
         if (dict[key] === currentRange[2]) {
             currentRange[1] = key;
         } else {
-            result.push([currentRange]);
+            result.push(currentRange);
             currentRange = [key, key, dict[key]];
         }
     }

@@ -8,7 +8,7 @@ df.loader = {
                 if (!pdbId) {
                     pdbId = 'yang'
                 }
-                this.loadTextFromPDB(pdbId, file, this.callBackLoading);
+                this.loadTextFromPDB(pdbId, file, this.callBackLoading, callback);
                 break;
             case 'name':
                 pdbId = file.split(".")[0].trim();
@@ -16,10 +16,9 @@ df.loader = {
                 if (!pdbId) {
                     pdbId = 'yang'
                 }
-                this.loadTextFromRequest(pdbId, file, this.callBackLoading);
+                this.loadTextFromRequest(pdbId, file, this.callBackLoading, callback);
                 break;
         }
-        callback();
     },
     // todo 需要想一想 如何限制空间
     getCenterOffset: function () {
@@ -29,12 +28,13 @@ df.loader = {
         let z = -(limit.z[0] + limit.z[1]) / 2;
         df.GeoCenterOffset = new THREE.Vector3(x, y, z);
     },
-    callBackLoading: function (pdbId, error, content) {
+    callBackLoading: function (pdbId, error, content, callback) {
         if (error) {
             console.log(error);
         }
         // 处理 pdb
         w3m.pdb(content, pdbId);
+        console.log(2)
         w3m.api.switchRepModeMain(w3m.LINE);
         w3m.api.switchRepModeMain(w3m.BACKBONE);
         w3m.api.switchRepModeMain(w3m.CUBE);
@@ -75,34 +75,35 @@ df.loader = {
         // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_DRUG);
         // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_SLICE);
         // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_BOND);
+        callback();
     },
-    loadTextFromPDB: function (pdbId, file, callback) {
+    loadTextFromPDB: function (pdbId, file, callback, loadBack) {
         let io = new FileReader();
         io.onload = function (event) {
             let e = event || window.event;
             let textContent = e.target.result;
-            callback(pdbId, null, textContent);
+            callback(pdbId, null, textContent, loadBack);
         };
         io.onerror = function (event) {
-            callback(pdbId, 'File Error: ' + event.target.error, null);
+            callback(pdbId, 'File Error: ' + event.target.error, null, loadBack);
         };
         io.readAsText(file);
     },
-    loadTextFromRequest: function (pdbId, file, callback) {
+    loadTextFromRequest: function (pdbId, file, callback, loadBack) {
         let url_index = 0;
         let io = new XMLHttpRequest();
         io.onload = function () {
             if (io.status === 200) {
                 let responseText = io.responseText;
-                callback(pdbId, null, responseText);
+                callback(pdbId, null, responseText, loadBack);
             }
         }
         io.onerror = function (event) {
             if (url_index <= df.remoteUrl.length) {
                 url_index++;
-                this.loadTextFromRequest(pdbId, file, callback);
+                this.loadTextFromRequest(pdbId, file, callback, loadBack);
             } else {
-                callback(pdbId, 'File Error: ' + event.target.error, null);
+                callback(pdbId, 'File Error: ' + event.target.error, null, loadBack);
             }
         }
         let url = df.remoteUrl[url_index] + file + ".pdb";

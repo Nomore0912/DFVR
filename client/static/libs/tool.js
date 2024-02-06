@@ -14,7 +14,7 @@ df.tool = {
 
     getAtomById: function (pdbId, atom, structure) {
         // 从pdb文件中获取属性
-        let scope = this;
+        let danFeng = this;
         let atomID = atom[1];
         let atomName = atom[2];
         let residueName = atom[3];
@@ -31,7 +31,7 @@ df.tool = {
             xyz[0],
             xyz[1],
             xyz[2]);
-        let color = scope.getColorByIndex(pdbId, atomID, structure);
+        let color = danFeng.getColorByIndex(pdbId, atomID, structure);
 
         return {
             id: atomID,
@@ -53,7 +53,7 @@ df.tool = {
     },
     getFirstAtomIdByChain: function (pdbId, chainName) {
         let first_resid = Object.keys(w3m.mol[pdbId].rep[chainName])[0];
-        return this.getFirstAtomByResidueId(first_resid, chainName)[0];
+        return this.getFirstAtomByResidueId(pdbId, first_resid, chainName)[0];
     },
     getFirstAtomByResidueId: function (pdbId, residueId, chainName) {
         let atoms = w3m.mol[pdbId].atom.main;
@@ -70,6 +70,7 @@ df.tool = {
         return atom;
     },
     getColorByIndex: function (pdbId, id, structure) {
+        structure
         let rId = w3m.mol[pdbId].color[structure][id];
         if (rId) {
             let C_color = w3m.rgb[rId][0];
