@@ -24,6 +24,7 @@ df.drawer = {
         mesh.userData = {
             presentAtom: atom
         };
+        // het
         df.GROUP[pdbId][type][chain].add(mesh);
     },
     drawStick: function (pdbId, type, chain, start, end, radius, color, atom) {
@@ -51,6 +52,7 @@ df.drawer = {
         df.GROUP[pdbId][type][chain].add(mesh);
     },
     drawTube: function (path, radius, color, atom, pdbId, type, chain) {
+        console.log(path)
         let Catmull = new THREE.CatmullRomCurve3(path);
         let step = path.length - 1;
         let geometry = new THREE.TubeGeometry(Catmull, step, radius, df.config.tubesegment, false);
@@ -60,6 +62,7 @@ df.drawer = {
         })];
         materials.side = THREE.FrontSide;
         let mesh = new THREE.Mesh(geometry, materials);
+        console.log(atom.id, mesh.geometry.faces);
         mesh.name = atom.id;
         mesh.userData = {
             presentAtom: atom,

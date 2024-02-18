@@ -994,7 +994,6 @@ w3m.tool = {
                             normal = [0, 0, 0];
                             turnover = [0, 0, 0];
                         }
-
                         atom_info[4] = normal;
                         atom_info[6] = turnover;
                         path.push(atom_info);
@@ -1006,7 +1005,6 @@ w3m.tool = {
             if (path.length > 2) {
                 this.naturalFrame(path, frame, mol_id);
             }
-
             /* Fill */
             // SS
             let ss_map = mol.ss[chain_id];
@@ -1382,7 +1380,6 @@ w3m.tool = {
         // 平滑曲率
         let k = w3m.config.smooth_curvature;
         let len = path.length;
-
         // /* xyz, color & tan */
         // 计算的第一个residue的 曲率变化
         path[0][3] = math.polysum([k, -k / 4], [vec3.point(path[0][1], path[1][1]), vec3.point(path[0][1], path[2][1])]);
@@ -1391,7 +1388,6 @@ w3m.tool = {
         let normal = vec3.cross(binormal, tan);
         path[0][4] = vec3.cross(binormal, tan);
         let atom = w3m.tool.getMainAtomById(mol_id, path[0][0]);
-
         frame[0] = [path[0][0], path[0][1], path[0][2], tan, path[0][4], binormal, path[0][6]];
         for (let i = 1; i < len; i++) {
             // tan
@@ -1408,9 +1404,7 @@ w3m.tool = {
             let turnover = path[i - 1][6];
             let tan = vec3.unit(path[i][3]);
             let binormal = vec3.unit(vec3.cross(tan, path[i][4]));
-
             path[i][4] = vec3.cross(binormal, tan);
-
             for (let ii = 1; ii <= n; ii++) {
                 let t = ii / n;
                 let xyz = curve[ii][0];
@@ -1419,7 +1413,6 @@ w3m.tool = {
                 let binormal = vec3.unit(vec3.cross(tan, normal_tmp));
                 let normal = vec3.cross(binormal, tan);
                 frame.push([id, xyz, color, tan, normal, binormal, turnover]);
-
                 if (ii === n / 2) {
                     id = path[i][0]; // switch id, color, turnover
                     color = path[i][2];

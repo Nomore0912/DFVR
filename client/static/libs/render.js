@@ -106,23 +106,33 @@ df.render = {
         });
 
         // xr
-        leftController = this.createController(renderer, canon, 0);
-        rightController = this.createController(renderer, canon, 1);
+        // leftController = this.createController(renderer, canon, 0);
+        // rightController = this.createController(renderer, canon, 1);
 
-        let controllerModelFactory = new THREE.XRControllerModelFactory();
-        leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
-        rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
+        // let controllerModelFactory = new THREE.XRControllerModelFactory();
+        // leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
+        // rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
         // 射线
-        let leftLine = this.createControllerLine();
-        let rightLine = this.createControllerLine();
-        leftController.add(leftLine);
-        rightController.add(rightLine);
+        // let leftLine = this.createControllerLine();
+        // let rightLine = this.createControllerLine();
+        // leftController.add(leftLine);
+        // rightController.add(rightLine);
 
         rayCaster = new THREE.Raycaster();
         window.addEventListener('resize', onWindowResize, false);
-        camera.updateProjectionMatrix();
+
+        // camera.updateProjectionMatrix();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            camera.updateProjectionMatrix();
+            renderer.render(scene, camera);
+        }
+
         controls.update();
-        renderer.render(scene, camera);
+        animate();
+        // camera.lookAt()
+        // renderer.render(scene, camera);
 
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;

@@ -78,6 +78,9 @@ var findResidueIdIndex = function (residueIdList, targetStr) {
 var customCompare = function (a, b) {
     a = a.toString();
     b = b.toString();
+    if (a === b) {
+        return 0
+    }
     const numA = parseInt(a.match(/\d+/) || 0, 10);
     const numB = parseInt(b.match(/\d+/) || 0, 10);
     if (numA !== numB) {
@@ -91,12 +94,12 @@ var customCompare = function (a, b) {
 };
 
 var w3m_find_object_first = function (obj) {
-    let keys = Object.keys(dict).sort(customCompare);
+    let keys = Object.keys(obj).sort(customCompare);
     return obj[keys[0]];
 }
 
-var w3m_find_object_last = function (obj, return_item) {
-    let keys = Object.keys(dict).sort(customCompare);
+var w3m_find_object_last = function (obj) {
+    let keys = Object.keys(obj).sort(customCompare);
     return obj[keys[-1]];
 }
 

@@ -15,6 +15,7 @@ df = {
 
     // 重新加载时需要初始化的参数
     pdbId: [],
+    pdbInfoList: ['main', 'het', 'water', 'surface'],
 
 
     // all pdb info group, 这里包含 pdb 用于展示的全部属性
@@ -24,7 +25,6 @@ df = {
     GROUP_STRUCTURE_INDEX: {},
 
     // GROUP-MAIN
-
     GROUP_COUNT: 46,
     GROUP_MAIN: 0,
     GROUP_HET: 1,
@@ -32,7 +32,6 @@ df = {
     GROUP_SURFACE: 3,
 
     pptShow: false,
-
     GeoCenterOffset: "",
 
     // residue
@@ -73,7 +72,7 @@ df = {
     DOCKING_BUTTON: [],
 }
 
-    // config
+// config
 df.config = {
     mainMode: df.CARTOON_SSE,
     hetMode: df.HET_STICK,

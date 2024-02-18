@@ -197,6 +197,7 @@ df.painter = {
     showTubeByResidue: function (pdbId, chainId, resId, residue, type) {
         let path = residue.path;
         if (path.length === 0) return;
+        let w = df.config.stick_sphere_w;
         let residueKeys = Object.keys(w3m.mol[pdbId].residueData[chainId]).sort(customCompare);
         let resInd = findResidueIdIndex(residueKeys, resId);
         let radius = df.config.tube_radius;
@@ -223,17 +224,12 @@ df.painter = {
                 }
                 if (preResidue !== undefined && residueKeys[resInd - 1] !== undefined) {
                     if (customCompare(residueKeys[resInd - 1], resId) === -1) {
-                        console.log("preResidue.path[preResidue.path.length - 1]", preResidue.path[preResidue.path.length - 1])
-                        console.log("preResidue.path",preResidue.path)
-                        console.log("preResidue",preResidue)
                         path = [preResidue.path[preResidue.path.length - 1]].concat(path);
                     }
                 }
                 break;
         }
         if (path.length > 0) {
-            console.log("path", path);
-            console.log("type", type);
             df.drawer.drawTube(
                 path, radius, caAtom.color, caAtom, pdbId, 'main', caAtom.chainName
             );
@@ -245,11 +241,16 @@ df.painter = {
                 df.GROUP[pdbId]['main'][caAtom.chainName].children[df.GROUP[pdbId]['main'][caAtom.chainName].children.length - 1].visible = true;
             }
         }
-    }
-    ,
+    },
     showRibbonEllipseDrawFunc: function (pdbId, residue, path, cubeData) {
         let radius = df.config.ellipse_radius;
         let caAtom = df.tool.getMainAtom(pdbId, residue.caid);
+        let caId = 0;
+        if (caAtom.caid) {
+            caId = caAtom.caid;
+        } else {
+            caId = caAtom.id;
+        }
         if (path.length > 0) {
             df.drawer.drawEllipse(
                 path,
@@ -259,7 +260,7 @@ df.painter = {
                 pdbId,
                 'main',
                 caAtom.chainName,
-                caAtom.caid,
+                caId,
                 cubeData.tangents.length - 1);
             df.GROUP[pdbId]['main'][caAtom.chainName].children[df.GROUP[pdbId]['main'][caAtom.chainName].children.length - 1].visible = true;
         }
@@ -359,7 +360,6 @@ df.painter = {
                 break;
         }
     },
-
     showSurface: function (pdbId,
                            startId = 1,
                            endId, isSelected = true,

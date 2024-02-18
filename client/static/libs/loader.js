@@ -40,18 +40,21 @@ df.loader = {
         w3m.api.switchRepModeMain(w3m.CUBE);
         w3m.api.switchRepModeMain(w3m.CARTOON);
 
-        df.GROUP[pdbId] = new THREE.Group();
-        df.GROUP[pdbId]['main'] = new THREE.Group();
-        df.GROUP[pdbId]['het'] = new THREE.Group();
-        df.GROUP[pdbId]['water'] = new THREE.Group();
-        df.GROUP[pdbId]['surface'] = new THREE.Group();
+        df.GROUP[pdbId] = {};
+        // init dict
+        df.pdbInfoList.forEach(function (name) {
+            df.GROUP[pdbId][name] = {}
+        });
+
         df.GROUP_MAIN_INDEX[pdbId] = [];
         df.GROUP_HET_INDEX[pdbId] = [];
         df.GROUP_STRUCTURE_INDEX[pdbId] = [];
 
         for (let chain in w3m.mol[pdbId].chain) {
             let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
-            df.GROUP[pdbId]['main'][chain] = new THREE.Group();
+            df.pdbInfoList.forEach(function (name) {
+                df.GROUP[pdbId][name][chain] = new THREE.Group();
+            });
             df.GROUP[pdbId]['main'][chain].name = chain;
             df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
             if (!df.pptShow) {
