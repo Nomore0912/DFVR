@@ -75,7 +75,7 @@ df = {
 // config
 df.config = {
     mainMode: df.CARTOON_SSE,
-    hetMode: df.HET_STICK,
+    hetMode: df.HET_BALL_ROD,
     water_sphere_w: 8,
     surface: df.SURFACE,
     stick_sphere_w: 4,

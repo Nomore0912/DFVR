@@ -8,7 +8,7 @@ df.painter = {
                 this.showHetStick(pdbId);
                 break;
             case df.HET_BALL_ROD:
-                this.showHetBallRod(molId, isdocking);
+                this.showHetBallRod(pdbId);
                 break;
         }
     },
@@ -37,40 +37,71 @@ df.painter = {
             df.tool.clearGroupIndex(df.GROUP[molId]['water']);
         }
     },
+    showHetWithoutConnect: function (molId, radius, w, history) {
+        for (let i in w3m.mol[molId].atom.het) {
+            let HetAtom = df.tool.getHetAtomOnly(molId, i);
+            if (HetAtom) {
+                if (history[HetAtom.id] === undefined) {
+                    let hetAtomRadius = radius + 0.001
+                    if (HetAtom.resName !== 'hoh') {
+                        hetAtomRadius = 1
+                        w = 16
+                    }
+                    df.drawer.drawSphere(
+                        molId,
+                        'het',
+                        HetAtom.chainName,
+                        HetAtom.posCentered,
+                        HetAtom.color,
+                        hetAtomRadius,
+                        HetAtom,
+                        w);
+                    history[HetAtom.id] = 1;
+                }
+            }
+        }
+    },
     showHetStick: function (molId) {
         let w = df.config.stick_sphere_w;
         let radius = 0.2;
         let history = {};
-        for (let i in w3m.mol[molId].connect) {
-            for (let j in w3m.mol[molId].connect[i]) {
-                let [startAtom, endAtom] = this.showHetAtomInfo(molId, i, j);
-                if (history[startAtom.id] === undefined) {
-                    df.drawer.drawSphere(
-                        molId,
-                        'het',
-                        startAtom.chainName,
-                        startAtom.posCentered,
-                        startAtom.color,
-                        radius + 0.001,
-                        startAtom,
-                        w);
-                    history[startAtom.id] = 1;
+        if (Object.keys(w3m.mol[molId].connect).length === 0) {
+            this.showHetWithoutConnect(molId, radius, w, history);
+        } else {
+            for (let i in w3m.mol[molId].connect) {
+                for (let j in w3m.mol[molId].connect[i]) {
+                    let [startAtom, endAtom] = this.showHetAtomInfo(molId, i, j);
+                    // 存在 Ca1,Ca2 这种情况，忽略 Ca2，会导致 atom 为空
+                    if (startAtom && endAtom) {
+                        if (history[startAtom.id] === undefined) {
+                            df.drawer.drawSphere(
+                                molId,
+                                'het',
+                                startAtom.chainName,
+                                startAtom.posCentered,
+                                startAtom.color,
+                                radius + 0.001,
+                                startAtom,
+                                w);
+                            history[startAtom.id] = 1;
+                        }
+                        if (history[endAtom.id] === undefined) {
+                            df.drawer.drawSphere(
+                                molId,
+                                'het',
+                                endAtom.chainName,
+                                endAtom.posCentered,
+                                endAtom.color,
+                                radius + 0.001,
+                                endAtom,
+                                w);
+                            history[endAtom.id] = 1;
+                        }
+                        let midPoint = df.tool.midPoint(startAtom.posCentered, endAtom.posCentered);
+                        df.drawer.drawStick(molId, 'het', startAtom.chainName, startAtom.posCentered, midPoint, radius, startAtom.color, startAtom);
+                        df.drawer.drawStick(molId, 'het', endAtom.chainName, midPoint, endAtom.posCentered, radius, endAtom.color, endAtom);
+                    }
                 }
-                if (history[endAtom.id] === undefined) {
-                    df.drawer.drawSphere(
-                        molId,
-                        'het',
-                        endAtom.chainName,
-                        endAtom.posCentered,
-                        endAtom.color,
-                        radius + 0.001,
-                        endAtom,
-                        w);
-                    history[endAtom.id] = 1;
-                }
-                let midPoint = df.tool.midPoint(startAtom.posCentered, endAtom.posCentered);
-                df.drawer.drawStick(molId, 'het', startAtom.chainName, startAtom.posCentered, midPoint, radius, startAtom.color, startAtom);
-                df.drawer.drawStick(molId, 'het', endAtom.chainName, midPoint, endAtom.posCentered, radius, endAtom.color, endAtom);
             }
         }
     },
@@ -78,36 +109,42 @@ df.painter = {
         let w = df.config.stick_sphere_w;
         let radius = 0.12;
         let history = {};
-        for (let i in w3m.mol[molId].connect) {
-            for (let j in w3m.mol[molId].connect[i]) {
-                let [startAtom, endAtom] = this.showHetAtomInfo(molId, i, j);
-                if (history[startAtom.id] === undefined) {
-                    df.drawer.drawSphere(
-                        molId,
-                        'het',
-                        startAtom.chainName,
-                        startAtom.posCentered,
-                        startAtom.color,
-                        startAtom.radius * 0.2,
-                        startAtom,
-                        w);
-                    history[startAtom.id] = 1;
+        if (Object.keys(w3m.mol[molId].connect).length === 0) {
+            this.showHetWithoutConnect(molId, radius, w, history);
+        } else {
+            for (let i in w3m.mol[molId].connect) {
+                for (let j in w3m.mol[molId].connect[i]) {
+                    let [startAtom, endAtom] = this.showHetAtomInfo(molId, i, j);
+                    if (startAtom && endAtom) {
+                        if (history[startAtom.id] === undefined) {
+                            df.drawer.drawSphere(
+                                molId,
+                                'het',
+                                startAtom.chainName,
+                                startAtom.posCentered,
+                                startAtom.color,
+                                startAtom.radius * 0.2,
+                                startAtom,
+                                w);
+                            history[startAtom.id] = 1;
+                        }
+                        if (history[endAtom.id] === undefined) {
+                            df.drawer.drawSphere(
+                                molId,
+                                'het',
+                                endAtom.chainName,
+                                endAtom.posCentered,
+                                endAtom.color,
+                                endAtom.radius * 0.2,
+                                endAtom,
+                                w);
+                            history[endAtom.id] = 1;
+                        }
+                        let midPoint = df.tool.midPoint(startAtom.posCentered, endAtom.posCentered);
+                        df.drawer.drawStick(molId, 'het', startAtom.chainName, startAtom.posCentered, midPoint, radius, startAtom.color, startAtom);
+                        df.drawer.drawStick(molId, 'het', endAtom.chainName, midPoint, endAtom.posCentered, radius, endAtom.color, endAtom);
+                    }
                 }
-                if (history[endAtom.id] === undefined) {
-                    df.drawer.drawSphere(
-                        molId,
-                        'het',
-                        endAtom.chainName,
-                        endAtom.posCentered,
-                        endAtom.color,
-                        endAtom.radius * 0.2,
-                        endAtom,
-                        w);
-                    history[endAtom.id] = 1;
-                }
-                let midPoint = df.tool.midPoint(startAtom.posCentered, endAtom.posCentered);
-                df.drawer.drawStick(molId, 'het', startAtom.chainName, startAtom.posCentered, midPoint, radius, startAtom.color, startAtom);
-                df.drawer.drawStick(molId, 'het', endAtom.chainName, midPoint, endAtom.posCentered, radius, endAtom.color, endAtom);
             }
         }
     },
@@ -120,7 +157,9 @@ df.painter = {
         if (endAtom === undefined) {
             endAtom = df.tool.getMainAtom(molId, i);
         }
-        endAtom.caid = endAtom.id;
+        if (endAtom) {
+            endAtom.caid = endAtom.id;
+        }
         return [startAtom, endAtom];
     },
 

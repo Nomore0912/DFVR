@@ -98,6 +98,14 @@ df.tool = {
         let atom = w3m.mol[molId].atom.het[id];
         if (atom !== undefined) {
             return this.getAtomById(molId, atom, 'het');
+        } else {
+            return this.getMainAtom(molId, id);
+        }
+    },
+    getHetAtomOnly: function (molId, id) {
+        let atom = w3m.mol[molId].atom.het[id];
+        if (atom !== undefined) {
+            return this.getAtomById(molId, atom, 'het');
         }
     },
 

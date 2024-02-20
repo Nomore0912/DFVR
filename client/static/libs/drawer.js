@@ -52,17 +52,14 @@ df.drawer = {
         df.GROUP[pdbId][type][chain].add(mesh);
     },
     drawTube: function (path, radius, color, atom, pdbId, type, chain) {
-        console.log(path)
         let Catmull = new THREE.CatmullRomCurve3(path);
         let step = path.length - 1;
         let geometry = new THREE.TubeGeometry(Catmull, step, radius, df.config.tubesegment, false);
-
         let materials = [new THREE.MeshPhongMaterial({
             color: color
         })];
         materials.side = THREE.FrontSide;
         let mesh = new THREE.Mesh(geometry, materials);
-        console.log(atom.id, mesh.geometry.faces);
         mesh.name = atom.id;
         mesh.userData = {
             presentAtom: atom,

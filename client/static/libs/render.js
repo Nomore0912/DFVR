@@ -6,7 +6,6 @@ var lightType = 0;
 // initVR -- controls
 var controls, leftController, leftControllerGrip, rightController, rightControllerGrip;
 
-
 df.render = {
     vrScene: function () {
         let newScene = new THREE.Scene();
@@ -100,22 +99,25 @@ df.render = {
 
         document.body.appendChild(VRButton.createButton(renderer));
         // 监听 vr
+        let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
+            isImmersive = true;
         });
         renderer.xr.addEventListener('sessionend', () => {
+            isImmersive = false;
         });
 
         // xr
-        // leftController = this.createController(renderer, canon, 0);
+        leftController = this.createController(renderer, canon, 0);
         // rightController = this.createController(renderer, canon, 1);
 
-        // let controllerModelFactory = new THREE.XRControllerModelFactory();
-        // leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
+        let controllerModelFactory = new THREE.XRControllerModelFactory();
+        leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
         // rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
         // 射线
-        // let leftLine = this.createControllerLine();
+        let leftLine = this.createControllerLine();
         // let rightLine = this.createControllerLine();
-        // leftController.add(leftLine);
+        leftController.add(leftLine);
         // rightController.add(rightLine);
 
         rayCaster = new THREE.Raycaster();

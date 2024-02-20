@@ -54,11 +54,13 @@ df.loader = {
             let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
             df.pdbInfoList.forEach(function (name) {
                 df.GROUP[pdbId][name][chain] = new THREE.Group();
+                df.GROUP[pdbId][name][chain].name = pdbId+'_'+name+'_'+chain;
             });
-            df.GROUP[pdbId]['main'][chain].name = chain;
             df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
             if (!df.pptShow) {
-                scene.add(df.GROUP[pdbId]['main'][chain]);
+                df.pdbInfoList.forEach(function (name) {
+                    scene.add(df.GROUP[pdbId][name][chain]);
+                });
             }
             df.GROUP_MAIN_INDEX[pdbId].push(chain);
             df.GROUP_STRUCTURE_INDEX[pdbId].push(chain);

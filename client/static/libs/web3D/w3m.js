@@ -1180,7 +1180,7 @@ w3m.tool = {
         for (let i = 0; i < shell.length; i++) {
             for (let j = 0; j < 4; j++) {
                 let k = j * 2 + 1;
-                let pos = new THREE.Vector3(shell[i][k][1][0] + offset.x, shell[i][k][1][1] + offset.y, shell[i][k][1][2] + offset.z);
+                let pos = new THREE.Vector3(shell[i][k][1][0], shell[i][k][1][1], shell[i][k][1][2]);
                 let atom = w3m.tool.getMainAtomById(mol_id, shell[i][k][0]);
                 if (atom && atom.resid) {
                     w3m.mol[mol_id].residueData[atom.chainname][atom.resid].arrow.push(pos);
@@ -1197,7 +1197,7 @@ w3m.tool = {
         for (let si = 0; si < shell.length; si++) {
             for (let sj = 0; sj < 4; sj++) {
                 let k = sj * 2 + 1;
-                let pos = new THREE.Vector3(shell[si][k][1][0] + offset.x, shell[si][k][1][1] + offset.y, shell[si][k][1][2] + offset.z);
+                let pos = new THREE.Vector3(shell[si][k][1][0], shell[si][k][1][1], shell[si][k][1][2]);
                 let atom = w3m.tool.getMainAtomById(mol_id, shell[si][k][0]);
                 if (atom && atom.resid) {
                     w3m.mol[mol_id].residueData[atom.chainname][atom.resid].arrow.push(pos);
@@ -1205,6 +1205,7 @@ w3m.tool = {
             }
         }
     },
+
     arrowheadFiller: function (frame, msg) {
         msg = msg || {};
         let side_differ = w3m_isset(msg.side_differ) ? msg.side_differ : false,
@@ -1425,7 +1426,8 @@ w3m.tool = {
                         if (w3m.mol[mol_id].residueData[atom.chainname][atom.resid].path.length === (w3m.config.smooth_segment + 1)) {
                             continue;
                         }
-                        w3m.mol[mol_id].residueData[atom.chainname][atom.resid].path.push(new THREE.Vector3(xyz[0] + offset.x, xyz[1] + offset.y, xyz[2] + offset.z));
+                        // w3m.mol[mol_id].residueData[atom.chainname][atom.resid].path.push(new THREE.Vector3(xyz[0] + offset.x, xyz[1] + offset.y, xyz[2] + offset.z));
+                        w3m.mol[mol_id].residueData[atom.chainname][atom.resid].path.push(new THREE.Vector3(xyz[0], xyz[1], xyz[2]));
                         w3m.mol[mol_id].residueData[atom.chainname][atom.resid].binormals.push(new THREE.Vector3(binormal[0], binormal[1], binormal[2]));
                         w3m.mol[mol_id].residueData[atom.chainname][atom.resid].normals.push(new THREE.Vector3(normal[0], normal[1], normal[2]));
                         w3m.mol[mol_id].residueData[atom.chainname][atom.resid].tangents.push(new THREE.Vector3(tan[0], tan[1], tan[2]));

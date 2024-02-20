@@ -256,6 +256,7 @@ THREE.XRControllerModelFactory = (function () {
 
                 if (xrInputSource.targetRayMode !== 'tracked-pointer' || !xrInputSource.gamepad) return;
 
+
                 fetchProfile(xrInputSource, this.path, DEFAULT_PROFILE).then(({profile, assetPath}) => {
 
                     // controllerModel.motionController = new THREE.MotionController(
