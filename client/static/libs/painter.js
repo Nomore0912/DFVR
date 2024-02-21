@@ -43,13 +43,15 @@ df.painter = {
             if (HetAtom) {
                 if (history[HetAtom.id] === undefined) {
                     let hetAtomRadius = radius + 0.001
+                    let types = 'water'
                     if (HetAtom.resName !== 'hoh') {
                         hetAtomRadius = 1
                         w = 16
+                        types = 'het'
                     }
                     df.drawer.drawSphere(
                         molId,
-                        'het',
+                        types,
                         HetAtom.chainName,
                         HetAtom.posCentered,
                         HetAtom.color,

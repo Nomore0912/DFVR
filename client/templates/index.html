@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>DFVR</title>
+    <link rel="stylesheet" href="../static/css/index.css" type="text/css"/>
     <script type="text/javascript" src="../static/js/three.js"></script>
     <script type="text/javascript" src="../static/js/GLTFLoader.js"></script>
 
@@ -34,10 +35,36 @@
     </a>
 </div>
 <div id="SideToolbar" class="panel">
-    <LABEL onclick="switchMenu('Docking')">Docking</LABEL>
-    <span class="subMenu" id="Docking">
-
-    </span>
+    <!--    <LABEL onclick="switchMenu('Docking')">Docking</LABEL>-->
+    <div class="subMenu" id="DockingMenu">
+        <button name="" id="DockingButton" value="">Docking</button>
+    </div>
+    <input name="mode" id="showWater" type="checkbox" title="Show Water"/>
+    <label class="label" for="showWater">show Water</label>
+</div>
+<div id="DockingTab">
+    <div id="DockingTabHeader">
+        <span id="CloseDockingTab" class="closeClass">x</span>
+    </div>
+    <div id="DockingInnerTab">
+        <ul class="DockingUl">
+            <li>
+                <label for="DockingTool">Docking</label>
+                <select id="DockingTool">
+                </select>
+            </li>
+            <li>
+                <label for="Receptor">Receptor</label>
+                <select id="Receptor">
+                </select>
+            </li>
+            <li>
+                <label for="Ligand">Ligand</label>
+                <select id="Ligand">
+                </select>
+            </li>
+        </ul>
+    </div>
 </div>
 <div id="segmentHolder"></div>
 <script type="text/javascript" src="../static/libs/index.js"></script>

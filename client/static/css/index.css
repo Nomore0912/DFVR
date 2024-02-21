@@ -1,0 +1,66 @@
+#DockingTab {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 270px;
+    z-index: 10;
+    display: block;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid #00aaff;
+    box-shadow: 0 0 10px #00aaff;
+    border-radius: 10px;
+    color: #00aaff;
+    padding: 10px;
+    font-family: 'Microsoft YaHei', sans-serif;
+}
+
+.closeClass {
+    float: right;
+    cursor: pointer;
+    color: #ff4444;
+    font-weight: bold;
+}
+
+select, button {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px none #00aaff;
+    color: #00aaff;
+    padding: 2px;
+    cursor: pointer;
+    font-family: 'Microsoft YaHei', sans-serif;
+}
+
+button:hover, select:hover {
+    background: rgba(255, 165, 0, 0.8);
+}
+
+label {
+    color: #00aaff;
+}
+
+.DockingUl {
+    margin-top: 20px;
+}
+
+.DockingUl li {
+    margin-bottom: 10px;
+    list-style-type: none;
+}
+
+#DockingTool {
+    position: absolute;
+    right: 30px;
+    width: 80px;
+}
+
+#Receptor {
+    position: absolute;
+    right: 30px;
+    width: 80px;
+}
+
+#Ligand {
+    position: absolute;
+    right: 30px;
+    width: 80px;
+}

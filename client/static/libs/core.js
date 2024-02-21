@@ -15,6 +15,7 @@ df = {
 
     // 重新加载时需要初始化的参数
     pdbId: [],
+    SelectedPDBId: '',
     pdbInfoList: ['main', 'het', 'water', 'surface'],
 
 

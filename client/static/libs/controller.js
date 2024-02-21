@@ -2,7 +2,6 @@ df.controller = {
     init: function () {
         this.createMenu();
         if (df.mode === df.MODE_VR) {
-
             df.render.initVR();
         }
     },
@@ -20,24 +19,29 @@ df.controller = {
                     pdbId = 'yang'
                 }
                 df.loader.load(file, 'file', function () {
-                    console.log(w3m.mol)
-                    console.log(3)
                     df.controller.drawGeometry(df.config.mainMode, pdbId);
                     df.controller.drawGeometry(df.config.hetMode, pdbId);
                 });
-
+                df.SelectedPDBId = pdbId;
             }
         });
 
-        // let b_showWater = document.getElementById("showWater");
-        // b_showWater.addEventListener('click', function (e) {
-        //     df.isShowWater = e.target.checked;
-        //     df.painter.showWater();
-        //     this.drawGeometry(df.config.hetMode);
-        // });
+        let b_showWater = document.getElementById("showWater");
+        b_showWater.addEventListener('click', function (e) {
+            df.isShowWater = e.target.checked;
+            df.painter.showWater(df.SelectedPDBId);
+        });
 
         // todo
-        // let docking = document.getElementById("Docking");
+        let dockingButton = document.getElementById("DockingButton");
+        let dockingTab = document.getElementById("DockingTab");
+        let closeDockingTab = document.getElementById("CloseDockingTab");
+        dockingButton.addEventListener('click', function (e) {
+            dockingTab.style.display = "block";
+        });
+        closeDockingTab.addEventListener('click', function () {
+            dockingTab.style.display = "none";
+        });
         // 生成 DOCKING_BUTTON
         // docking.addEventListener('click', function (e) {
         //     df.DOCKING_BUTTON.forEach(function (buttonInfo) {
