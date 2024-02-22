@@ -33,6 +33,7 @@ df.loader = {
             console.log(error);
         }
         // 处理 pdb
+        df.pdbContent[pdbId] = content;
         w3m.pdb(content, pdbId);
         console.log(2)
         w3m.api.switchRepModeMain(w3m.LINE);

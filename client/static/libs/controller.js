@@ -36,28 +36,70 @@ df.controller = {
         let dockingButton = document.getElementById("DockingButton");
         let dockingTab = document.getElementById("DockingTab");
         let closeDockingTab = document.getElementById("CloseDockingTab");
+        let DockingTool = document.getElementById("DockingTool");
+        let Receptor = document.getElementById("Receptor");
+        let Ligand = document.getElementById("Ligand");
+        let DockingSubmit = document.getElementById("DockingSubmit");
+        let DockingToolValue = undefined;
+        let ReceptorValue = undefined;
+        let LigandValue = undefined;
+
+
         dockingButton.addEventListener('click', function (e) {
             dockingTab.style.display = "block";
+            df.controller.popSelectOption(DockingTool, Object.keys(df.dockingDict));
+            df.controller.popSelectOption(Receptor, df.pdbId);
+            df.controller.popSelectOption(Ligand, df.pdbId);
+            DockingToolValue = DockingTool.value;
+            ReceptorValue = Receptor.value;
+            LigandValue = Ligand.value;
+        });
+        DockingTool.addEventListener('change', function () {
+            DockingToolValue = this.value;
+        });
+        Receptor.addEventListener('change', function () {
+            ReceptorValue = this.value;
+        });
+        Ligand.addEventListener('change', function () {
+            LigandValue = this.value;
         });
         closeDockingTab.addEventListener('click', function () {
             dockingTab.style.display = "none";
         });
         // 生成 DOCKING_BUTTON
-        // docking.addEventListener('click', function (e) {
-        //     df.DOCKING_BUTTON.forEach(function (buttonInfo) {
-        //         // 创建按钮元素
-        //         let button = document.createElement("button");
-        //         button.textContent = buttonInfo.name;
-        //         button.id = buttonInfo.name;
-        //
-        //         // 添加点击事件处理程序
-        //         button.addEventListener("click", function () {
-        //             // 这里添加按钮点击后的功能
-        //             console.log("Button clicked: " + buttonInfo.hostname);
-        //         });
-        //         docking.appendChild(button);
-        //     });
-        // });
+        DockingSubmit.addEventListener('click', async function (e) {
+            dockingTab.style.display = "none";
+            let url = df.dockingDict[DockingToolValue];
+            let data = {
+                'receptor': df.pdbContent[ReceptorValue],
+                'ligand': df.pdbContent[LigandValue]
+            }
+            data = JSON.stringify(data);
+
+            let responseData = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: data,
+            }).then(response => {
+                return response.json();
+            }).then(responseData => {
+
+
+            }).catch(error => {
+                console.error('Docking fetch Error:', error);
+            });
+        });
+    },
+    popSelectOption: function (selectId, options) {
+        selectId.innerHTML = '';
+        options.forEach(option => {
+            let optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            selectId.appendChild(optionElement);
+        });
     },
     drawGeometry: function (type, pdbId) {
         df.tool.showSegmentHolder(true, function () {

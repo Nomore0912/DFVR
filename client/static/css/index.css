@@ -1,7 +1,7 @@
 #DockingTab {
     position: absolute;
-    top: 50px;
-    left: 50px;
+    top: 24%;
+    left: 36%;
     width: 270px;
     z-index: 10;
     display: block;
@@ -34,17 +34,37 @@ button:hover, select:hover {
     background: rgba(255, 165, 0, 0.8);
 }
 
+#DockingInnerTab {
+    display: flex;
+    flex-direction: column; /* 确保子元素垂直排列 */
+    align-items: center; /* 水平居中所有子元素，包括按钮 */
+    justify-content: center; /* 如果需要，也可以用来垂直居中内容 */
+}
+
 label {
     color: #00aaff;
 }
 
 .DockingUl {
-    margin-top: 20px;
+    width: 80%; /* 确保UL占据整个父容器的宽度 */
+    display: flex;
+    flex-direction: column; /* 使列表项垂直排列 */
+
+    margin-top: 30px;
+    list-style-type: none;
 }
 
 .DockingUl li {
     margin-bottom: 10px;
-    list-style-type: none;
+}
+
+#DockingSubmit {
+    width: 80px;
+    line-height: 17px;
+    border-radius: 5px;
+    height: 30px;
+    margin-top: 20px; /* 根据需要调整间距 */
+    align-items: center; /* 水平居中所有列表项 */
 }
 
 #DockingTool {

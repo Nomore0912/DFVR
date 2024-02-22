@@ -16,7 +16,9 @@ df = {
     // 重新加载时需要初始化的参数
     pdbId: [],
     SelectedPDBId: '',
+    dockingDict: {'HDock': '127.0.0.1'},
     pdbInfoList: ['main', 'het', 'water', 'surface'],
+    pdbContent: {},
 
 
     // all pdb info group, 这里包含 pdb 用于展示的全部属性
