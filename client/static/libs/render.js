@@ -6,6 +6,7 @@ var lightType = 0;
 // initVR -- controls
 var controls, leftController, leftControllerGrip, rightController, rightControllerGrip;
 
+
 df.render = {
     vrScene: function () {
         let newScene = new THREE.Scene();
@@ -109,30 +110,38 @@ df.render = {
 
         // xr
         leftController = this.createController(renderer, canon, 0);
-        // rightController = this.createController(renderer, canon, 1);
+        rightController = this.createController(renderer, canon, 1);
+        rayCaster = new THREE.Raycaster();
 
         let controllerModelFactory = new THREE.XRControllerModelFactory();
         leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
-        // rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
+        rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
         // 射线
         let leftLine = this.createControllerLine();
-        // let rightLine = this.createControllerLine();
+        let rightLine = this.createControllerLine();
         leftController.add(leftLine);
-        // rightController.add(rightLine);
+        rightController.add(rightLine);
 
-        rayCaster = new THREE.Raycaster();
+        leftController.addEventListener('selectstart', function (event) {
+            onTriggerDown(event, rayCaster)
+        });
+        rightController.addEventListener('selectend', function (event) {
+            onTriggerUp
+        });
+
         window.addEventListener('resize', onWindowResize, false);
 
         // camera.updateProjectionMatrix();
 
         function animate() {
-            requestAnimationFrame(animate);
+            // requestAnimationFrame(animate);
             camera.updateProjectionMatrix();
             renderer.render(scene, camera);
         }
 
         controls.update();
-        animate();
+        renderer.setAnimationLoop(animate);
+        // animate();
         // camera.lookAt()
         // renderer.render(scene, camera);
 
@@ -157,3 +166,4 @@ df.render = {
         }
     },
 }
+

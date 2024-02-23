@@ -16,13 +16,21 @@ df = {
     // 重新加载时需要初始化的参数
     pdbId: [],
     SelectedPDBId: '',
-    dockingDict: {'HDock': '127.0.0.1'},
     pdbInfoList: ['main', 'het', 'water', 'surface'],
     pdbContent: {},
 
+    // gamepad
+    selection: 0,
+    select_all: 100,
+    select_main: 101,
+
+
+    // menu
+    showMenu: false,
+
 
     // all pdb info group, 这里包含 pdb 用于展示的全部属性
-    GROUP: new THREE.Group(),
+    GROUP: {},
     GROUP_HET_INDEX: {},
     GROUP_MAIN_INDEX: {},
     GROUP_STRUCTURE_INDEX: {},
@@ -72,7 +80,7 @@ df = {
     HET_IRON: 56,
 
     // docking
-    DOCKING_BUTTON: [],
+    dockingDict: {'HDock': window.location.href+'hdock'},
 }
 
 // config
@@ -81,7 +89,7 @@ df.config = {
     hetMode: df.HET_BALL_ROD,
     water_sphere_w: 8,
     surface: df.SURFACE,
-    stick_sphere_w: 4,
+    stick_sphere_w: 12,
     stick_radius: 3,
     ball_rod_radius: 0.12,
     tube_radius: 0.2,

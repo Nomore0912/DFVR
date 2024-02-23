@@ -47,9 +47,9 @@ df.loader = {
             df.GROUP[pdbId][name] = {}
         });
 
-        df.GROUP_MAIN_INDEX[pdbId] = [];
-        df.GROUP_HET_INDEX[pdbId] = [];
-        df.GROUP_STRUCTURE_INDEX[pdbId] = [];
+        // df.GROUP_MAIN_INDEX[pdbId] = [];
+        // df.GROUP_HET_INDEX[pdbId] = [];
+        // df.GROUP_STRUCTURE_INDEX[pdbId] = [];
 
         for (let chain in w3m.mol[pdbId].chain) {
             let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
@@ -63,18 +63,18 @@ df.loader = {
                     scene.add(df.GROUP[pdbId][name][chain]);
                 });
             }
-            df.GROUP_MAIN_INDEX[pdbId].push(chain);
-            df.GROUP_STRUCTURE_INDEX[pdbId].push(chain);
+            // df.GROUP_MAIN_INDEX[pdbId].push(chain);
+            // df.GROUP_STRUCTURE_INDEX[pdbId].push(chain);
         }
         // Main Het
-        df.GROUP_MAIN_INDEX[pdbId].push(df.GROUP_MAIN);
-        df.GROUP_HET_INDEX[pdbId].push(df.GROUP_HET);
-        df.GROUP_HET_INDEX[pdbId].push(df.GROUP_WATER);
+        // df.GROUP_MAIN_INDEX[pdbId].push(df.GROUP_MAIN);
+        // df.GROUP_HET_INDEX[pdbId].push(df.GROUP_HET);
+        // df.GROUP_HET_INDEX[pdbId].push(df.GROUP_WATER);
         // structure
-        df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_MAIN);
-        df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_WATER);
-        df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_HET);
-        df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_SURFACE);
+        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_MAIN);
+        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_WATER);
+        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_HET);
+        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_SURFACE);
         // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_AXIS);
         // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_INFO);
         // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_MUTATION);

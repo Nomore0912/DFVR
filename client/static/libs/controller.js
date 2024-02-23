@@ -70,6 +70,7 @@ df.controller = {
         DockingSubmit.addEventListener('click', async function (e) {
             dockingTab.style.display = "none";
             let url = df.dockingDict[DockingToolValue];
+            console.log(url);
             let data = {
                 'receptor': df.pdbContent[ReceptorValue],
                 'ligand': df.pdbContent[LigandValue]
@@ -85,11 +86,12 @@ df.controller = {
             }).then(response => {
                 return response.json();
             }).then(responseData => {
-
-
+                console.log(responseData);
+                return responseData;
             }).catch(error => {
                 console.error('Docking fetch Error:', error);
             });
+            console.log("responseData", responseData)
         });
     },
     popSelectOption: function (selectId, options) {
