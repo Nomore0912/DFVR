@@ -19,7 +19,7 @@ df.drawer = {
         });
 
         let mesh = new THREE.Mesh(geometry, material);
-        mesh.name = atom.caid;
+        mesh.name = df.tool.atomCaId(atom);
         mesh.position.copy(point);
         mesh.userData = {
             presentAtom: atom
@@ -43,7 +43,7 @@ df.drawer = {
         geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, distance / 2, 0));
         geometry.applyMatrix4(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(90)));
         let mesh = new THREE.Mesh(geometry, material);
-        mesh.name = atom.caid;
+        mesh.name = df.tool.atomCaId(atom);
         mesh.position.copy(start);
         mesh.lookAt(end);
         mesh.userData = {

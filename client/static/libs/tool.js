@@ -45,7 +45,9 @@ df.tool = {
             coe: coe,
             type: atomType,
             radius: radius,
-            color: color
+            color: color,
+            pdbId: pdbId,
+            typeName: structure,
         };
     },
     isDictEmpty: function (dict) {
@@ -154,4 +156,11 @@ df.tool = {
             callback();
         }
     },
+    atomCaId: function (atom) {
+        if (atom.caid) {
+            return atom.caid;
+        } else {
+            return atom.id;
+        }
+    }
 }

@@ -287,11 +287,7 @@ df.painter = {
         let radius = df.config.ellipse_radius;
         let caAtom = df.tool.getMainAtom(pdbId, residue.caid);
         let caId = 0;
-        if (caAtom.caid) {
-            caId = caAtom.caid;
-        } else {
-            caId = caAtom.id;
-        }
+        caId = df.tool.atomCaId(caAtom);
         if (path.length > 0) {
             df.drawer.drawEllipse(
                 path,
